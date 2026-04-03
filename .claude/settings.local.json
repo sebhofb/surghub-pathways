@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-expo-app@latest . --template blank)",
+      "Read(//Users/sebhofbauer/**)",
+      "Bash(npx create-expo-app@latest SURGapp --template blank)",
+      "Bash(npx create-expo-app@latest SURGapp --template blank --yes)",
+      "Bash(npm install:*)",
+      "Bash(npx expo:*)",
+      "Bash(pkill -f 'expo start' 2)",
+      "Bash(/dev/null npm:*)",
+      "Bash(open http://localhost:8081)",
+      "Bash(pkill -f \"expo start\")",
+      "Bash(npm view:*)",
+      "Bash(python3 -c \"import json,sys; v=json.load\\(sys.stdin\\); print\\([x for x in v if x.startswith\\(''''54''''\\)]\\)\")",
+      "WebFetch(domain:www.globalsurgeryfoundation.org)",
+      "Bash(git --version)",
+      "Bash(gh --version)",
+      "Bash(gh auth:*)"
+    ]
+  }
+}
