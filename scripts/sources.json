@@ -1,17 +1,22 @@
 [
   {
-    "name": "COSECSA Opportunities",
-    "url": "https://www.cosecsa.org/opportunities",
+    "name": "COSECSA Training & Fellowships",
+    "url": "https://cosecsa.org/join-us/training-programmes",
     "trust": "auto"
   },
   {
-    "name": "PAACS Training Programs",
-    "url": "https://www.paacs.net/training-programs",
+    "name": "PAACS Surgical Programs",
+    "url": "https://paacs.net/what-we-do",
+    "trust": "auto"
+  },
+  {
+    "name": "PAACS Get Involved",
+    "url": "https://paacs.net/get-involved",
     "trust": "auto"
   },
   {
     "name": "Global Surgery Foundation",
-    "url": "https://www.globalsurgeryfoundation.org/programs",
+    "url": "https://www.globalsurgeryfoundation.org",
     "trust": "auto"
   },
   {
@@ -20,43 +25,38 @@
     "trust": "auto"
   },
   {
-    "name": "Lancet Global Health - Calls",
-    "url": "https://www.thelancet.com/journals/langlo/calls-for-papers",
+    "name": "WHO Careers & Fellowships",
+    "url": "https://www.who.int/careers",
     "trust": "review"
   },
   {
-    "name": "WHO Fellowships",
-    "url": "https://www.who.int/about/funding/fellowships",
-    "trust": "auto"
+    "name": "NCD Alliance Jobs & Opportunities",
+    "url": "https://ncdalliance.org/jobs",
+    "trust": "review"
   },
   {
-    "name": "NCD Alliance Opportunities",
-    "url": "https://ncdalliance.org/opportunities",
-    "trust": "auto"
+    "name": "Wellcome Trust Funding",
+    "url": "https://wellcome.org/funding",
+    "trust": "review"
   },
   {
-    "name": "ISGNS Opportunities",
-    "url": "https://www.isgns.org/opportunities",
+    "name": "ISGNS",
+    "url": "https://www.isgns.org",
     "trust": "review"
   },
   {
     "name": "International Surgical Society",
-    "url": "https://www.theiss.org",
+    "url": "https://www.theiss.org/congress-2026",
     "trust": "review"
   },
   {
-    "name": "Surgeons of East Africa",
-    "url": "https://eso-africa.org/opportunities",
-    "trust": "auto"
-  },
-  {
-    "name": "Bill & Melinda Gates Foundation - Global Health Grants",
-    "url": "https://www.gatesfoundation.org/about/apply-for-a-grant",
+    "name": "Lancet Global Health",
+    "url": "https://www.thelancet.com/journals/langlo/aims",
     "trust": "review"
   },
   {
-    "name": "Wellcome Trust Open Calls",
-    "url": "https://wellcome.org/grant-funding/schemes",
+    "name": "Gates Foundation Global Health",
+    "url": "https://www.gatesfoundation.org/our-work/programs/global-health",
     "trust": "review"
   }
 ]
