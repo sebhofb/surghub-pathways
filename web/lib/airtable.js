@@ -28,7 +28,7 @@ async function fetchAllRecords(token, baseId, table, params = {}) {
     const url = new URL(`${BASE_URL}/${baseId}/${encodeURIComponent(table)}`);
 
     // Always filter to published only
-    url.searchParams.set("filterByFormula", `{status}="published"`);
+    url.searchParams.set("filterByFormula", `{Status}="published"`);
 
     if (params.fields) {
       params.fields.forEach((f) => url.searchParams.append("fields[]", f));

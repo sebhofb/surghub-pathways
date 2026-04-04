@@ -57,7 +57,7 @@ async function getExistingOpportunities() {
 
 async function addToAirtable(fields) {
   // Try with status: "draft" first; if field doesn't exist yet, retry without it
-  for (const payload of [{ ...fields, status: 'draft' }, fields]) {
+  for (const payload of [{ ...fields, Status: 'draft' }, fields]) {
     const res = await fetch(AIRTABLE_ENDPOINT, {
       method: 'POST',
       headers: AIRTABLE_HEADERS,
@@ -80,7 +80,7 @@ async function archiveExpiredRecords() {
   const cutoffStr = cutoff.toISOString().split('T')[0];
 
   const formula = encodeURIComponent(
-    `AND({status}="published", {deadline}<"${cutoffStr}", {deadline}!="")`
+    `AND({Status}="published", {deadline}<"${cutoffStr}", {deadline}!="")`
   );
   const res = await fetch(`${AIRTABLE_ENDPOINT}?filterByFormula=${formula}&fields[]=title&fields[]=deadline`, {
     headers: AIRTABLE_HEADERS,
@@ -93,7 +93,7 @@ async function archiveExpiredRecords() {
 
   // Patch in batches of 10 (Airtable limit)
   for (let i = 0; i < expired.length; i += 10) {
-    const batch = expired.slice(i, i + 10).map(r => ({ id: r.id, fields: { status: 'archived' } }));
+    const batch = expired.slice(i, i + 10).map(r => ({ id: r.id, fields: { Status: 'archived' } }));
     await fetch(AIRTABLE_ENDPOINT, {
       method: 'PATCH',
       headers: AIRTABLE_HEADERS,

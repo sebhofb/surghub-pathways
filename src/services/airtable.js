@@ -30,7 +30,7 @@ function mapRecord(record) {
 
 export async function fetchOpportunities() {
   // Only fetch published records — drafts await review, archived are hidden
-  const filter = encodeURIComponent(`{status}="published"`);
+  const filter = encodeURIComponent(`{Status}="published"`);
   const url = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE)}?filterByFormula=${filter}&sort[0][field]=deadline&sort[0][direction]=asc`;
 
   const response = await fetch(url, {
