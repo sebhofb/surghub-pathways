@@ -25,6 +25,7 @@ function mapRecord(record) {
     url: f.url || '',
     isNew: f.isNew === true || f.isNew === 'true',
     isSponsored: f.isSponsored === true || f.isSponsored === 'true',
+    status: (f.Status || f.status || 'published').toLowerCase(),
   };
 }
 
@@ -42,7 +43,10 @@ export async function fetchOpportunities() {
   }
 
   const json = await response.json();
-  const records = (json.records || []).map(mapRecord);
+  // Double-filter client-side in case the Airtable formula lets anything through
+  const records = (json.records || [])
+    .map(mapRecord)
+    .filter(r => r.status === 'published');
 
   // Save to cache
   await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(records));
