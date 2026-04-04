@@ -41,9 +41,12 @@ const client = new Anthropic({ apiKey: ANTHROPIC_KEY });
 const SOURCES = JSON.parse(readFileSync(join(__dirname, 'sources.json'), 'utf8'));
 
 // ── Airtable helpers ──────────────────────────────────────────────────────────
+const AIRTABLE_ENDPOINT = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(AIRTABLE_TABLE)}`;
+const AIRTABLE_HEADERS  = { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' };
+
 async function getExistingOpportunities() {
-  const url = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(AIRTABLE_TABLE)}?fields[]=title&fields[]=url`;
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
+  const url = `${AIRTABLE_ENDPOINT}?fields[]=title&fields[]=url`;
+  const res = await fetch(url, { headers: AIRTABLE_HEADERS });
   if (!res.ok) throw new Error(`Airtable fetch failed: ${res.status}`);
   const json = await res.json();
   return (json.records || []).map(r => ({
@@ -53,14 +56,44 @@ async function getExistingOpportunities() {
 }
 
 async function addToAirtable(fields) {
-  const endpoint = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(AIRTABLE_TABLE)}`;
-  const res = await fetch(endpoint, {
+  // New records go in as "draft" — approve them in Airtable before they appear in the app
+  const res = await fetch(AIRTABLE_ENDPOINT, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ records: [{ fields }] }),
+    headers: AIRTABLE_HEADERS,
+    body: JSON.stringify({ records: [{ fields: { ...fields, status: 'draft' } }] }),
   });
   if (!res.ok) throw new Error(`Airtable add failed: ${res.status} ${await res.text()}`);
   return res.json();
+}
+
+async function archiveExpiredRecords() {
+  // Fetch all published records that have a deadline more than 7 days in the past
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 7);
+  const cutoffStr = cutoff.toISOString().split('T')[0];
+
+  const formula = encodeURIComponent(
+    `AND({status}="published", {deadline}<"${cutoffStr}", {deadline}!="")`
+  );
+  const res = await fetch(`${AIRTABLE_ENDPOINT}?filterByFormula=${formula}&fields[]=title&fields[]=deadline`, {
+    headers: AIRTABLE_HEADERS,
+  });
+  if (!res.ok) { console.log(`  ⚠️  Archive fetch failed: ${res.status}`); return 0; }
+
+  const json = await res.json();
+  const expired = json.records || [];
+  if (expired.length === 0) return 0;
+
+  // Patch in batches of 10 (Airtable limit)
+  for (let i = 0; i < expired.length; i += 10) {
+    const batch = expired.slice(i, i + 10).map(r => ({ id: r.id, fields: { status: 'archived' } }));
+    await fetch(AIRTABLE_ENDPOINT, {
+      method: 'PATCH',
+      headers: AIRTABLE_HEADERS,
+      body: JSON.stringify({ records: batch }),
+    });
+  }
+  return expired.length;
 }
 
 // ── Duplicate detection ───────────────────────────────────────────────────────
@@ -370,6 +403,11 @@ async function main() {
 
     await sleep(1500);
   }
+
+  // ── Auto-archive expired published records ────────────────────────────────
+  console.log('\n🗄️  Archiving expired opportunities...');
+  const archived = await archiveExpiredRecords();
+  console.log(`   ${archived} record${archived === 1 ? '' : 's'} archived`);
 
   // ── Final summary ─────────────────────────────────────────────────────────
   console.log('\n\n════════════════════════════════════');

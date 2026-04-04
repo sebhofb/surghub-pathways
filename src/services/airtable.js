@@ -29,7 +29,9 @@ function mapRecord(record) {
 }
 
 export async function fetchOpportunities() {
-  const url = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE)}?sort[0][field]=deadline&sort[0][direction]=asc`;
+  // Only fetch published records — drafts await review, archived are hidden
+  const filter = encodeURIComponent(`{status}="published"`);
+  const url = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE)}?filterByFormula=${filter}&sort[0][field]=deadline&sort[0][direction]=asc`;
 
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${TOKEN}` },
