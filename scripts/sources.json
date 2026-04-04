@@ -1,62 +1,146 @@
 [
   {
-    "name": "COSECSA Scholarships & Fellowships",
+    "name": "COSECSA – Scholarships & Fellowships",
     "url": "https://www.cosecsa.org/category/scholarships/",
-    "trust": "auto"
+    "trust": "auto",
+    "category": "Regional Surgical Colleges"
   },
   {
-    "name": "PAACS Programs & Fellowships",
+    "name": "WACS – News & Opportunities",
+    "url": "https://www.wacscoac.org/index.php/component/content/category/27-news?Itemid=101",
+    "trust": "auto",
+    "category": "Regional Surgical Colleges"
+  },
+  {
+    "name": "CANECSA – Fellowship & Membership",
+    "url": "https://canecsa.org/membership-fellowship/",
+    "trust": "auto",
+    "category": "Regional Surgical Colleges"
+  },
+  {
+    "name": "PAACS – Programs & Fellowships",
     "url": "https://paacs.net/what-we-do",
-    "trust": "auto"
+    "trust": "auto",
+    "category": "Global Surgery Networks"
+  },
+  {
+    "name": "InciSioN – Get Involved",
+    "url": "https://www.incisionetwork.org/get-involved",
+    "trust": "auto",
+    "category": "Global Surgery Networks"
+  },
+  {
+    "name": "The G4 Alliance – News & Updates",
+    "url": "https://theg4alliance.org/news-updates/",
+    "trust": "auto",
+    "category": "Global Surgery Networks"
   },
   {
     "name": "Global Surgery Foundation",
     "url": "https://www.globalsurgeryfoundation.org",
-    "trust": "auto"
+    "trust": "auto",
+    "category": "Global Surgery Networks"
   },
   {
     "name": "GSF – WHA79 Side Event",
     "url": "https://www.globalsurgeryfoundation.org/wha2026",
-    "trust": "auto"
+    "trust": "auto",
+    "category": "Global Surgery Networks"
   },
   {
     "name": "GSF – WHA79 Side Events Calendar",
     "url": "https://www.globalsurgeryfoundation.org/wha-calendar-2026",
-    "trust": "auto"
+    "trust": "auto",
+    "category": "Global Surgery Networks"
   },
   {
-    "name": "Hamlin Fistula Ethiopia Training",
+    "name": "Hamlin Fistula Ethiopia – Training",
     "url": "https://hamlinfistula.org/what-we-do/training/",
-    "trust": "auto"
+    "trust": "auto",
+    "category": "Global Surgery Networks"
   },
   {
-    "name": "WHO Careers & Fellowships",
-    "url": "https://www.who.int/careers",
-    "trust": "review"
-  },
-  {
-    "name": "NCD Alliance Jobs & Opportunities",
-    "url": "https://ncdalliance.org/jobs",
-    "trust": "review"
-  },
-  {
-    "name": "Wellcome Trust Funding Schemes",
-    "url": "https://wellcome.org/research-funding/schemes",
-    "trust": "review"
-  },
-  {
-    "name": "ISGNS",
+    "name": "ISGNS – International Society of Global Neurosurgery",
     "url": "https://www.isgns.org",
-    "trust": "review"
+    "trust": "auto",
+    "category": "Global Surgery Networks"
+  },
+  {
+    "name": "RCSI Institute of Global Surgery – News & Events",
+    "url": "https://www.rcsi.com/surgery/global-surgery/news-and-events",
+    "trust": "auto",
+    "category": "Global Surgery Networks"
+  },
+  {
+    "name": "ACS – International Scholarships & Fellowships",
+    "url": "https://www.facs.org/for-medical-professionals/professional-growth-and-wellness/scholarships-fellowships-and-awards/international/",
+    "trust": "auto",
+    "category": "Major Grants & Funding"
+  },
+  {
+    "name": "NIH Fogarty – Funding Opportunities",
+    "url": "https://www.fic.nih.gov/Funding/Pages/Fogarty-Funding-Opps.aspx",
+    "trust": "auto",
+    "category": "Major Grants & Funding"
+  },
+  {
+    "name": "Wellcome Trust – Funding Schemes",
+    "url": "https://wellcome.org/research-funding/schemes",
+    "trust": "auto",
+    "category": "Major Grants & Funding"
+  },
+  {
+    "name": "RSTMH – Grants & Awards",
+    "url": "https://rstmh.org/grants",
+    "trust": "auto",
+    "category": "Major Grants & Funding"
+  },
+  {
+    "name": "GFMER – 2026 Courses & Training",
+    "url": "https://www.gfmer.ch/2026-courses/index.htm",
+    "trust": "auto",
+    "category": "Major Grants & Funding"
+  },
+  {
+    "name": "ISS – Congress Events",
+    "url": "https://web.iss-sic.com/congress-events",
+    "trust": "auto",
+    "category": "Conferences"
   },
   {
     "name": "International Surgical Week 2026",
     "url": "https://www.isw2026.org/",
-    "trust": "review"
+    "trust": "auto",
+    "category": "Conferences"
   },
   {
-    "name": "ISS Congress Events",
-    "url": "https://web.iss-sic.com/congress-events",
-    "trust": "review"
+    "name": "WHO – Careers & Fellowships",
+    "url": "https://www.who.int/careers",
+    "trust": "review",
+    "category": "Global Aggregators"
+  },
+  {
+    "name": "NCD Alliance – Jobs & Opportunities",
+    "url": "https://ncdalliance.org/jobs",
+    "trust": "review",
+    "category": "Global Aggregators"
+  },
+  {
+    "name": "Opportunity Desk – Fellowships",
+    "url": "https://opportunitydesk.org/category/fellowships/",
+    "trust": "review",
+    "category": "Global Aggregators"
+  },
+  {
+    "name": "Opportunity Desk – Grants",
+    "url": "https://opportunitydesk.org/category/grants/",
+    "trust": "review",
+    "category": "Global Aggregators"
+  },
+  {
+    "name": "Johns Hopkins – Global Health Student Opportunities",
+    "url": "https://globalhealth.jhu.edu/student-opportunities-and-training-in-global-health",
+    "trust": "review",
+    "category": "Global Aggregators"
   }
 ]
