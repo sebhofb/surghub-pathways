@@ -3,8 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const TOKEN = process.env.EXPO_PUBLIC_AIRTABLE_TOKEN;
 const BASE_ID = process.env.EXPO_PUBLIC_AIRTABLE_BASE_ID;
 const TABLE = process.env.EXPO_PUBLIC_AIRTABLE_TABLE;
-const CACHE_KEY = '@surghub:opportunities';
-const CACHE_TIMESTAMP_KEY = '@surghub:opportunities_synced_at';
+const CACHE_VERSION = 'v2'; // bump this to force-clear old caches
+const CACHE_KEY = `@surghub:opportunities:${CACHE_VERSION}`;
+const CACHE_TIMESTAMP_KEY = `@surghub:opportunities_synced_at:${CACHE_VERSION}`;
 const CACHE_TTL_MS = 1000 * 60 * 60; // 1 hour
 
 function mapRecord(record) {
