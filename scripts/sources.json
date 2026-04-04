@@ -1,7 +1,7 @@
 [
   {
-    "name": "COSECSA Training & Fellowships",
-    "url": "https://cosecsa.org/join-us/training-programmes",
+    "name": "COSECSA Scholarships & Fellowships",
+    "url": "https://www.cosecsa.org/category/scholarships/",
     "trust": "auto"
   },
   {
@@ -35,8 +35,8 @@
     "trust": "review"
   },
   {
-    "name": "Wellcome Trust Funding",
-    "url": "https://wellcome.org/funding",
+    "name": "Wellcome Trust Funding Schemes",
+    "url": "https://wellcome.org/research-funding/schemes",
     "trust": "review"
   },
   {
@@ -45,18 +45,18 @@
     "trust": "review"
   },
   {
-    "name": "International Surgical Society",
-    "url": "https://www.theiss.org/congress-2026",
+    "name": "International Surgical Week 2026",
+    "url": "https://www.isw2026.org/",
     "trust": "review"
   },
   {
-    "name": "Lancet Global Health",
-    "url": "https://www.thelancet.com/journals/langlo/aims",
+    "name": "Gates Foundation Committed Grants",
+    "url": "https://www.gatesfoundation.org/about/committed-grants/",
     "trust": "review"
   },
   {
-    "name": "Gates Foundation Global Health",
-    "url": "https://www.gatesfoundation.org/our-work/programs/global-health",
+    "name": "ISS Congress Events",
+    "url": "https://web.iss-sic.com/congress-events",
     "trust": "review"
   }
 ]
