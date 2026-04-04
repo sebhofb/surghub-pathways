@@ -194,12 +194,8 @@ async function main() {
       summary.found++;
       opp.deadline = formatDate(opp.deadline);
       opp.isNew = true;
-      // Always convert tags to a plain string for Airtable
-      if (Array.isArray(opp.tags)) {
-        opp.tags = opp.tags.join(', ');
-      } else if (typeof opp.tags !== 'string') {
-        opp.tags = '';
-      }
+      // Remove tags — add manually in Airtable to avoid field type conflicts
+      delete opp.tags;
 
       if (isDuplicate(opp, existing)) {
         console.log(`    ⏭️  Duplicate: ${opp.title}`);
