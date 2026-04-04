@@ -2,12 +2,10 @@
 /**
  * SURGhub Pathways — Daily opportunity scraper
  *
- * Reads scripts/sources.json, visits each site, uses Claude to extract
- * any new opportunities, deduplicates against Airtable, and adds new ones.
- *
  * Two-phase approach:
- *   Phase 1 — Scrape listing page, extract opportunity titles + their specific URLs
- *   Phase 2 — Visit each specific URL to extract accurate dates and full details
+ *   Phase 1 — Scrape listing page via Jina Reader (handles JS-rendered sites),
+ *              extract opportunity titles + their specific URLs
+ *   Phase 2 — Visit each specific URL for accurate dates and full details
  *
  * Run locally:  node scripts/scrape-opportunities.mjs
  * Run in CI:    triggered by GitHub Actions (see .github/workflows/daily-scrape.yml)
@@ -79,8 +77,40 @@ function isDuplicate(candidate, existing) {
   });
 }
 
-// ── Web fetch — preserves links so Claude can see real URLs ───────────────────
+// ── Fetch via Jina Reader (renders JS, returns clean markdown with links) ──────
+// Falls back to direct HTML fetch if Jina fails.
 async function fetchPage(url) {
+  try {
+    return await fetchViaJina(url);
+  } catch (jinaErr) {
+    console.log(`    ⚠️  Jina failed (${jinaErr.message}), falling back to direct fetch`);
+    return await fetchDirect(url);
+  }
+}
+
+async function fetchViaJina(url) {
+  const jinaUrl = `https://r.jina.ai/${url}`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  try {
+    const res = await fetch(jinaUrl, {
+      signal: controller.signal,
+      headers: {
+        'Accept': 'text/plain',
+        'X-No-Cache': 'true',
+        'User-Agent': 'Mozilla/5.0 (compatible; SURGhub-bot/1.0)',
+      },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    if (text.length < 100) throw new Error('Empty response from Jina');
+    return text.slice(0, 20000);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function fetchDirect(url) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   try {
@@ -90,18 +120,14 @@ async function fetchPage(url) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const html = await res.text();
-
-    // Resolve relative URLs
     let base = url;
     try { base = new URL(url).origin; } catch {}
-
     return html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-      // Convert <a href="...">text</a> → "text [URL]" so Claude sees actual links
+      // Preserve links as "text [URL]" so Claude can read real hrefs
       .replace(/<a\s[^>]*href=["']([^"'#][^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, (_, href, text) => {
         const cleanText = text.replace(/<[^>]+>/g, '').trim();
-        // Make relative URLs absolute
         let fullHref = href.trim();
         if (fullHref.startsWith('/')) fullHref = base + fullHref;
         return cleanText ? `${cleanText} [${fullHref}]` : fullHref;
@@ -125,14 +151,14 @@ async function extractOpportunityLinks(pageText, sourceUrl) {
 
 Look for: fellowships, scholarships, grants, conferences, research calls, abstract submissions, travel awards.
 
-This page may be a listing/index page. For each opportunity found, extract its title and the MOST SPECIFIC link to that opportunity.
-Links appear in the text as "Link text [URL]".
+For each opportunity found, return its title and the MOST SPECIFIC link to that individual opportunity page.
+Links in this markdown content appear as [text](URL) or plain URLs.
 
-Return a JSON array of objects:
+Return a JSON array:
 - title: string
-- url: string — the specific URL for that opportunity (from the [URL] markers in the text). If no specific URL exists, use: "${sourceUrl}"
+- url: string — the direct link to that specific opportunity. If no specific link found, use: "${sourceUrl}"
 
-Return ONLY valid JSON — no markdown, no commentary. If none found, return [].
+Return ONLY valid JSON — no markdown fences, no commentary. If none found, return [].
 
 Source URL: ${sourceUrl}
 
@@ -158,22 +184,22 @@ async function extractFullDetails(pageText, pageUrl) {
     max_tokens: 1024,
     messages: [{
       role: 'user',
-      content: `You are extracting details about a specific global health / surgery opportunity from a webpage.
+      content: `Extract details about a global health / surgery opportunity from this page.
 
-Extract the following fields as a JSON object:
+Return a JSON object with these fields:
 - title: string — exact name of the opportunity
 - category: exactly one of "fellowship" | "scholarship" | "grant" | "conference" | "research"
 - organization: string — the sponsoring organisation
 - location: string — city/country, or "Remote / Global"
-- deadline: string — the EXACT application deadline or event date in YYYY-MM-DD format.
-  * Look carefully for specific dates (e.g. "18 May 2026", "May 18, 2026").
-  * Do NOT guess — if you see a specific day, use it.
-  * Only use the last day of a month if genuinely only month+year is given.
+- deadline: string — EXACT application deadline or event date in YYYY-MM-DD format.
+  IMPORTANT: Read the page carefully for a specific day (e.g. "18 May 2026" → "2026-05-18").
+  Only default to end-of-month if genuinely no specific day is mentioned anywhere.
+  Do NOT invent or guess a date — if truly unknown, use "".
 - summary: 2-4 sentences describing the opportunity, who it is for, and what it covers.
-- url: string — the canonical URL of this specific opportunity. Use: "${pageUrl}"
+- url: string — use exactly: "${pageUrl}"
 - isNew: true
 
-Return ONLY valid JSON — no markdown, no commentary.
+Return ONLY valid JSON — no markdown fences, no commentary.
 
 Page URL: ${pageUrl}
 
@@ -233,7 +259,7 @@ async function main() {
     let links;
     try {
       links = await extractOpportunityLinks(listingText, source.url);
-      console.log(`    🔗 Phase 1: found ${links.length} opportunity link${links.length === 1 ? '' : 's'}`);
+      console.log(`    🔗 Phase 1: ${links.length} opportunity link${links.length === 1 ? '' : 's'} found`);
     } catch (err) {
       console.log(`    ❌ Phase 1 failed: ${err.message}`);
       summary.errors.push(`${source.name}: link extraction failed — ${err.message}`);
@@ -241,7 +267,7 @@ async function main() {
     }
 
     if (links.length === 0) {
-      console.log(`    ℹ️  No opportunities found on this page`);
+      console.log(`    ℹ️  No opportunities on this page`);
       await sleep(1000);
       continue;
     }
@@ -257,10 +283,10 @@ async function main() {
       if (isSpecificPage) {
         try {
           detailText = await fetchPage(link.url);
-          console.log(`    📄 Fetched detail page: ${link.url}`);
+          console.log(`    📄 Fetched: ${link.url} (${detailText.length} chars)`);
           await sleep(500);
         } catch (err) {
-          console.log(`    ⚠️  Couldn't fetch detail page (${err.message}), using listing text`);
+          console.log(`    ⚠️  Detail page failed (${err.message}), using listing text`);
           detailUrl = source.url;
         }
       }
@@ -292,7 +318,8 @@ async function main() {
       try {
         await addToAirtable(opp);
         existing.push({ title: opp.title.toLowerCase(), url: (opp.url || '').toLowerCase() });
-        console.log(`    ➕ Added: ${opp.title} (deadline: ${opp.deadline})`);
+        console.log(`    ➕ Added: ${opp.title}`);
+        console.log(`       📅 Deadline: ${opp.deadline || '(none)'} | 🔗 ${opp.url}`);
         summary.added++;
         await sleep(300);
       } catch (err) {
@@ -301,7 +328,6 @@ async function main() {
       }
     }
 
-    // Polite delay between sources
     await sleep(1500);
   }
 
