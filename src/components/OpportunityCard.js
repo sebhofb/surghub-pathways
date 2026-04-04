@@ -26,10 +26,11 @@ function formatDeadline(dateStr) {
 export default function OpportunityCard({ item, onPress }) {
   const { savedIds, toggleSaved } = useSaved();
   const isSaved = savedIds.has(item.id);
-  const days = daysUntil(item.deadline);
+  const hasDeadline = !!item.deadline;
+  const days = hasDeadline ? daysUntil(item.deadline) : null;
   const categoryColor = CATEGORY_COLORS[item.category] || '#444';
-  const isUrgent = days >= 0 && days <= 14;
-  const isPast = days < 0;
+  const isUrgent = hasDeadline && days >= 0 && days <= 14;
+  const isPast = hasDeadline && days < 0;
 
   return (
     <TouchableOpacity
@@ -73,9 +74,14 @@ export default function OpportunityCard({ item, onPress }) {
           styles.deadline,
           isUrgent && styles.urgentDeadline,
           isPast && styles.pastDeadline,
+          !hasDeadline && styles.ongoingDeadline,
         ]}>
-          {isPast ? 'Closed' : `⏰ Deadline: ${formatDeadline(item.deadline)}`}
-          {isUrgent && !isPast ? `  (${days}d left!)` : ''}
+          {!hasDeadline
+            ? '🔄 Ongoing / Rolling admissions'
+            : isPast
+              ? 'Closed'
+              : `⏰ Deadline: ${formatDeadline(item.deadline)}${isUrgent ? `  (${days}d left!)` : ''}`
+          }
         </Text>
       </View>
     </TouchableOpacity>
@@ -184,5 +190,9 @@ const styles = StyleSheet.create({
   },
   pastDeadline: {
     color: '#aaa',
+  },
+  ongoingDeadline: {
+    color: '#1a6b4a',
+    fontStyle: 'italic',
   },
 });

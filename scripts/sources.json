@@ -5,13 +5,8 @@
     "trust": "auto"
   },
   {
-    "name": "PAACS Surgical Programs",
+    "name": "PAACS Programs & Fellowships",
     "url": "https://paacs.net/what-we-do",
-    "trust": "auto"
-  },
-  {
-    "name": "PAACS Get Involved",
-    "url": "https://paacs.net/get-involved",
     "trust": "auto"
   },
   {
@@ -22,6 +17,11 @@
   {
     "name": "GSF – WHA79 Side Event",
     "url": "https://www.globalsurgeryfoundation.org/wha2026",
+    "trust": "auto"
+  },
+  {
+    "name": "GSF – WHA79 Side Events Calendar",
+    "url": "https://www.globalsurgeryfoundation.org/wha-calendar-2026",
     "trust": "auto"
   },
   {
@@ -52,11 +52,6 @@
   {
     "name": "International Surgical Week 2026",
     "url": "https://www.isw2026.org/",
-    "trust": "review"
-  },
-  {
-    "name": "Gates Foundation Committed Grants",
-    "url": "https://www.gatesfoundation.org/about/committed-grants/",
     "trust": "review"
   },
   {

@@ -194,10 +194,13 @@ Return a JSON object with these fields:
 - category: exactly one of "fellowship" | "scholarship" | "grant" | "conference" | "research"
 - organization: string — the sponsoring organisation
 - location: string — city/country, or "Remote / Global"
-- deadline: string — EXACT application deadline or event date in YYYY-MM-DD format.
-  IMPORTANT: Read the page carefully for a specific day (e.g. "18 May 2026" → "2026-05-18").
-  Only default to end-of-month if genuinely no specific day is mentioned anywhere.
-  Do NOT invent or guess a date — if truly unknown, use "".
+- deadline: string — Follow these rules carefully:
+  1. Look for any specific date on the page: application deadline, event date, registration close date.
+     Return it as YYYY-MM-DD (e.g. "18 May 2026" → "2026-05-18").
+  2. Also look for a year the award/programme was issued (e.g. "2023 Travel Award", "Mentorship Programme 2022").
+     If the opportunity clearly belongs to a past year, return the last day of that year (e.g. "2023-12-31").
+  3. If the programme is genuinely open-ended with rolling admissions and no deadline, return "ongoing".
+  4. Only return "" if you truly cannot determine anything about timing.
 - summary: 2-4 sentences describing the opportunity, who it is for, and what it covers.
 - url: string — use exactly: "${pageUrl}"
 - isNew: true
@@ -221,11 +224,14 @@ ${pageText}`,
 }
 
 // ── Format date ───────────────────────────────────────────────────────────────
+// Returns YYYY-MM-DD, "ongoing", or "" (unknown)
 function formatDate(val) {
   if (!val) return '';
+  const lower = val.toLowerCase().trim();
+  if (lower === 'ongoing' || lower === 'rolling' || lower === 'open') return 'ongoing';
   if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
   const d = new Date(val);
-  return isNaN(d) ? val : d.toISOString().split('T')[0];
+  return isNaN(d) ? '' : d.toISOString().split('T')[0];
 }
 
 // ── Sleep ─────────────────────────────────────────────────────────────────────
@@ -324,8 +330,10 @@ async function main() {
       opp.isNew    = true;
       if (!opp.url) opp.url = detailUrl;
 
-      // Remove deadline if empty — Airtable date fields reject empty strings
-      if (!opp.deadline) delete opp.deadline;
+      // "ongoing" is valid for rolling programmes — remove from Airtable date field
+      // (Airtable date fields only accept YYYY-MM-DD or null)
+      const isOngoing = opp.deadline === 'ongoing';
+      if (isOngoing || !opp.deadline) delete opp.deadline;
 
       // Skip opportunities whose deadline has already passed (>7 days ago)
       if (opp.deadline) {
