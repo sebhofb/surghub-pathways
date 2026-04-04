@@ -17,10 +17,10 @@ function mapRecord(record) {
     location: f.location || '',
     deadline: f.deadline || '',
     summary: f.summary || '',
-    tags: Array.isArray(f.tags)
+    tags: typeof f.tags === 'string'
+      ? f.tags.split(',').map((t) => t.trim()).filter(Boolean)
+      : Array.isArray(f.tags)
       ? f.tags
-      : typeof f.tags === 'string'
-      ? f.tags.split(',').map((t) => t.trim())
       : [],
     url: f.url || '',
     isNew: f.isNew === true || f.isNew === 'true',

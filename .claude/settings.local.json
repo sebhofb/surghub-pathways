@@ -18,7 +18,12 @@
       "Bash(gh --version)",
       "Bash(gh auth:*)",
       "Skill(claude-api)",
-      "Skill(claude-api:*)"
+      "Skill(claude-api:*)",
+      "WebFetch(domain:cosecsa.org)",
+      "WebFetch(domain:paacs.net)",
+      "WebFetch(domain:who.int)",
+      "WebFetch(domain:ncdalliance.org)",
+      "WebFetch(domain:wellcome.org)"
     ]
   }
 }
