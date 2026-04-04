@@ -149,14 +149,17 @@ async function extractOpportunityLinks(pageText, sourceUrl) {
       role: 'user',
       content: `You scan webpages for global health and surgery career opportunities relevant to practitioners in low- and middle-income countries (LMICs).
 
-Look for: fellowships, scholarships, grants, conferences, research calls, abstract submissions, travel awards.
+Look for: fellowships, scholarships, grants, conferences, research calls, abstract submissions, travel awards, membership programs.
 
-For each opportunity found, return its title and the MOST SPECIFIC link to that individual opportunity page.
-Links in this markdown content appear as [text](URL) or plain URLs.
+Rules:
+- Each item must be a distinct named opportunity (not a navigation link, section anchor, or page section)
+- Do NOT return multiple items for the same underlying opportunity
+- Links appear as [text](URL) — use the most specific URL for each opportunity
+- Do NOT return anchor-only links like ${sourceUrl}#section
 
-Return a JSON array:
+Return a JSON array (deduplicated):
 - title: string
-- url: string — the direct link to that specific opportunity. If no specific link found, use: "${sourceUrl}"
+- url: string — direct link to that specific opportunity page. If none exists, use: "${sourceUrl}"
 
 Return ONLY valid JSON — no markdown fences, no commentary. If none found, return [].
 
@@ -259,12 +262,25 @@ async function main() {
     let links;
     try {
       links = await extractOpportunityLinks(listingText, source.url);
-      console.log(`    🔗 Phase 1: ${links.length} opportunity link${links.length === 1 ? '' : 's'} found`);
     } catch (err) {
       console.log(`    ❌ Phase 1 failed: ${err.message}`);
       summary.errors.push(`${source.name}: link extraction failed — ${err.message}`);
       continue;
     }
+
+    // Deduplicate links by base URL (strip anchors) and drop same-page anchor links
+    const sourceBase = source.url.split('#')[0].toLowerCase();
+    const seenUrls = new Set();
+    links = links.filter(link => {
+      const base = (link.url || source.url).split('#')[0].toLowerCase().trim();
+      // Drop anchor-only links — they point to a section of the listing page, not a new page
+      if (base === sourceBase && (link.url || '').includes('#')) return false;
+      if (seenUrls.has(base)) return false;
+      seenUrls.add(base);
+      return true;
+    });
+
+    console.log(`    🔗 Phase 1: ${links.length} unique opportunity link${links.length === 1 ? '' : 's'}`);
 
     if (links.length === 0) {
       console.log(`    ℹ️  No opportunities on this page`);
