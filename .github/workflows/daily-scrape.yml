@@ -39,30 +39,20 @@ jobs:
 
       - name: Send summary email
         if: always()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.NOTIFY_EMAIL }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          to: ${{ secrets.NOTIFY_EMAIL }}
-          from: SURGhub Pathways <${{ secrets.NOTIFY_EMAIL }}>
-          subject: "SURGhub Scrape — ${{ steps.scrape.outputs.ADDED }} added · ${{ github.run_id }}"
-          body: |
-            SURGhub Pathways — Daily Scrape Summary
-            ========================================
-            Date:     ${{ github.event.repository.updated_at || 'scheduled' }}
-            Added:    ${{ steps.scrape.outputs.ADDED }} new opportunities
-            Skipped:  ${{ steps.scrape.outputs.SKIPPED }} (duplicates / expired)
-            Errors:   ${{ steps.scrape.outputs.ERRORS }}
-
-            New opportunities are waiting in Airtable as "draft".
-            Review and publish them here:
-            https://airtable.com/apppYe8cZ3aLfOy7f
-
-            Full log:
-            https://github.com/sebhofb/surghub-pathways/actions/runs/${{ github.run_id }}
-
-            —
-            SURGhub Pathways · Global Surgery Foundation
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+          ADDED: ${{ steps.scrape.outputs.ADDED }}
+          SKIPPED: ${{ steps.scrape.outputs.SKIPPED }}
+          ERRORS: ${{ steps.scrape.outputs.ERRORS }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          curl -s https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"from\": \"SURGhub Pathways <onboarding@resend.dev>\",
+              \"to\": [\"$NOTIFY_EMAIL\"],
+              \"subject\": \"SURGhub Scrape — $ADDED added\",
+              \"text\": \"SURGhub Pathways — Daily Scrape Summary\n\nAdded:   $ADDED new opportunities\nSkipped: $SKIPPED (duplicates / expired)\nErrors:  $ERRORS\n\nNew opportunities are waiting in Airtable as draft.\nReview and publish: https://airtable.com/apppYe8cZ3aLfOy7f\n\nFull log: https://github.com/sebhofb/surghub-pathways/actions/runs/$RUN_ID\n\n— SURGhub Pathways · Global Surgery Foundation\"
+            }"
