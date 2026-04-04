@@ -25,9 +25,44 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Run opportunity scraper
+        id: scrape
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           EXPO_PUBLIC_AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
           EXPO_PUBLIC_AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           EXPO_PUBLIC_AIRTABLE_TABLE: Opportunities
-        run: node scripts/scrape-opportunities.mjs
+        run: |
+          node scripts/scrape-opportunities.mjs 2>&1 | tee /tmp/scrape-output.txt
+          echo "ADDED=$(grep -c '➕ Added' /tmp/scrape-output.txt || echo 0)" >> $GITHUB_OUTPUT
+          echo "SKIPPED=$(grep -c '⏭️' /tmp/scrape-output.txt || echo 0)" >> $GITHUB_OUTPUT
+          echo "ERRORS=$(grep -c '❌' /tmp/scrape-output.txt || echo 0)" >> $GITHUB_OUTPUT
+
+      - name: Send summary email
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.NOTIFY_EMAIL }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          to: ${{ secrets.NOTIFY_EMAIL }}
+          from: SURGhub Pathways <${{ secrets.NOTIFY_EMAIL }}>
+          subject: "SURGhub Scrape — ${{ steps.scrape.outputs.ADDED }} added · ${{ github.run_id }}"
+          body: |
+            SURGhub Pathways — Daily Scrape Summary
+            ========================================
+            Date:     ${{ github.event.repository.updated_at || 'scheduled' }}
+            Added:    ${{ steps.scrape.outputs.ADDED }} new opportunities
+            Skipped:  ${{ steps.scrape.outputs.SKIPPED }} (duplicates / expired)
+            Errors:   ${{ steps.scrape.outputs.ERRORS }}
+
+            New opportunities are waiting in Airtable as "draft".
+            Review and publish them here:
+            https://airtable.com/apppYe8cZ3aLfOy7f
+
+            Full log:
+            https://github.com/sebhofb/surghub-pathways/actions/runs/${{ github.run_id }}
+
+            —
+            SURGhub Pathways · Global Surgery Foundation
