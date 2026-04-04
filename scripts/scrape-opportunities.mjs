@@ -277,6 +277,16 @@ function formatDate(val) {
 // ── Sleep ─────────────────────────────────────────────────────────────────────
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+// ── Run promises with limited concurrency ─────────────────────────────────────
+async function withConcurrency(items, limit, fn) {
+  const results = [];
+  for (let i = 0; i < items.length; i += limit) {
+    const batch = items.slice(i, i + limit);
+    results.push(...await Promise.all(batch.map(fn)));
+  }
+  return results;
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
   console.log(`\n🔍 SURGhub Pathways — Daily Scrape`);
@@ -288,12 +298,13 @@ async function main() {
 
   const summary = { checked: 0, found: 0, added: 0, skipped: 0, errors: [] };
 
-  for (const source of SOURCES) {
+  // Process one source fully — fetch listing, extract links, fetch details, add to Airtable
+  async function processSource(source) {
     console.log(`\n━━━ ${source.name}`);
     console.log(`    ${source.url}`);
     summary.checked++;
 
-    // ── Fetch listing page ──────────────────────────────────────────────────
+    // ── Fetch listing page ────────────────────────────────────────────────
     let listingText;
     try {
       listingText = await fetchPage(source.url);
@@ -301,25 +312,24 @@ async function main() {
     } catch (err) {
       console.log(`    ❌ Fetch failed: ${err.message}`);
       summary.errors.push(`${source.name}: fetch failed — ${err.message}`);
-      continue;
+      return;
     }
 
-    // ── Phase 1: Extract opportunity links ──────────────────────────────────
+    // ── Phase 1: Extract opportunity links ──────────────────────────────
     let links;
     try {
       links = await extractOpportunityLinks(listingText, source.url);
     } catch (err) {
       console.log(`    ❌ Phase 1 failed: ${err.message}`);
       summary.errors.push(`${source.name}: link extraction failed — ${err.message}`);
-      continue;
+      return;
     }
 
-    // Deduplicate links by base URL (strip anchors) and drop same-page anchor links
+    // Deduplicate by base URL; drop same-page anchor links
     const sourceBase = source.url.split('#')[0].toLowerCase();
     const seenUrls = new Set();
     links = links.filter(link => {
       const base = (link.url || source.url).split('#')[0].toLowerCase().trim();
-      // Drop anchor-only links — they point to a section of the listing page, not a new page
       if (base === sourceBase && (link.url || '').includes('#')) return false;
       if (seenUrls.has(base)) return false;
       seenUrls.add(base);
@@ -327,17 +337,12 @@ async function main() {
     });
 
     console.log(`    🔗 Phase 1: ${links.length} unique opportunity link${links.length === 1 ? '' : 's'}`);
+    if (links.length === 0) { console.log(`    ℹ️  No opportunities on this page`); return; }
 
-    if (links.length === 0) {
-      console.log(`    ℹ️  No opportunities on this page`);
-      await sleep(1000);
-      continue;
-    }
+    // ── Phase 2: Fetch detail pages in parallel (max 4 at once) ────────
+    summary.found += links.length;
 
-    // ── Phase 2: Visit each specific page for full details ──────────────────
-    for (const link of links) {
-      summary.found++;
-
+    await withConcurrency(links, 4, async (link) => {
       const isSpecificPage = link.url && link.url !== source.url;
       let detailText = listingText;
       let detailUrl  = link.url || source.url;
@@ -346,7 +351,6 @@ async function main() {
         try {
           detailText = await fetchPage(link.url);
           console.log(`    📄 Fetched: ${link.url} (${detailText.length} chars)`);
-          await sleep(500);
         } catch (err) {
           console.log(`    ⚠️  Detail page failed (${err.message}), using listing text`);
           detailUrl = source.url;
@@ -356,43 +360,34 @@ async function main() {
       let opp;
       try {
         opp = await extractFullDetails(detailText, detailUrl);
-        if (!opp || !opp.title) {
-          console.log(`    ⚠️  No details extracted for: ${link.title}`);
-          continue;
-        }
+        if (!opp || !opp.title) { console.log(`    ⚠️  No details for: ${link.title}`); return; }
       } catch (err) {
         console.log(`    ❌ Detail extraction failed: ${err.message}`);
         summary.errors.push(`${link.title}: detail extraction failed`);
-        continue;
+        return;
       }
 
       opp.deadline = formatDate(opp.deadline);
       opp.isNew    = true;
       if (!opp.url) opp.url = detailUrl;
 
-      // "ongoing" is valid for rolling programmes — remove from Airtable date field
-      // (Airtable date fields only accept YYYY-MM-DD or null)
       const isOngoing = opp.deadline === 'ongoing';
       if (isOngoing || !opp.deadline) delete opp.deadline;
 
-      // Skip opportunities whose deadline has already passed (>7 days ago)
       if (opp.deadline) {
-        const deadlineDate = new Date(opp.deadline);
         const cutoff = new Date();
         cutoff.setDate(cutoff.getDate() - 7);
-        if (deadlineDate < cutoff) {
+        if (new Date(opp.deadline) < cutoff) {
           console.log(`    ⏭️  Expired (${opp.deadline}): ${opp.title}`);
           summary.skipped++;
-          await sleep(300);
-          continue;
+          return;
         }
       }
 
       if (isDuplicate(opp, existing)) {
         console.log(`    ⏭️  Duplicate: ${opp.title}`);
         summary.skipped++;
-        await sleep(300);
-        continue;
+        return;
       }
 
       try {
@@ -401,15 +396,15 @@ async function main() {
         console.log(`    ➕ Added: ${opp.title}`);
         console.log(`       📅 Deadline: ${opp.deadline || '(none)'} | 🔗 ${opp.url}`);
         summary.added++;
-        await sleep(300);
       } catch (err) {
         console.log(`    ❌ Failed to add: ${opp.title} — ${err.message}`);
         summary.errors.push(`${opp.title}: ${err.message}`);
       }
-    }
-
-    await sleep(1500);
+    });
   }
+
+  // Process all sources in parallel batches of 4
+  await withConcurrency(SOURCES, 4, processSource);
 
   // ── Auto-archive expired published records ────────────────────────────────
   console.log('\n🗄️  Archiving expired opportunities...');
