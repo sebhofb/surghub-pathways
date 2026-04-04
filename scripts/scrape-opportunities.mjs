@@ -56,14 +56,21 @@ async function getExistingOpportunities() {
 }
 
 async function addToAirtable(fields) {
-  // New records go in as "draft" — approve them in Airtable before they appear in the app
-  const res = await fetch(AIRTABLE_ENDPOINT, {
-    method: 'POST',
-    headers: AIRTABLE_HEADERS,
-    body: JSON.stringify({ records: [{ fields: { ...fields, status: 'draft' } }] }),
-  });
-  if (!res.ok) throw new Error(`Airtable add failed: ${res.status} ${await res.text()}`);
-  return res.json();
+  // Try with status: "draft" first; if field doesn't exist yet, retry without it
+  for (const payload of [{ ...fields, status: 'draft' }, fields]) {
+    const res = await fetch(AIRTABLE_ENDPOINT, {
+      method: 'POST',
+      headers: AIRTABLE_HEADERS,
+      body: JSON.stringify({ records: [{ fields: payload }] }),
+    });
+    if (res.ok) return res.json();
+    const text = await res.text();
+    if (res.status === 422 && text.includes('UNKNOWN_FIELD_NAME') && text.includes('status')) {
+      console.log('    ⚠️  No "status" field in Airtable yet — adding without it (create the field to enable review queue)');
+      continue; // retry without status
+    }
+    throw new Error(`Airtable add failed: ${res.status} ${text}`);
+  }
 }
 
 async function archiveExpiredRecords() {
