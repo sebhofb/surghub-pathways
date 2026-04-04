@@ -308,6 +308,22 @@ async function main() {
       opp.isNew    = true;
       if (!opp.url) opp.url = detailUrl;
 
+      // Remove deadline if empty — Airtable date fields reject empty strings
+      if (!opp.deadline) delete opp.deadline;
+
+      // Skip opportunities whose deadline has already passed (>7 days ago)
+      if (opp.deadline) {
+        const deadlineDate = new Date(opp.deadline);
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - 7);
+        if (deadlineDate < cutoff) {
+          console.log(`    ⏭️  Expired (${opp.deadline}): ${opp.title}`);
+          summary.skipped++;
+          await sleep(300);
+          continue;
+        }
+      }
+
       if (isDuplicate(opp, existing)) {
         console.log(`    ⏭️  Duplicate: ${opp.title}`);
         summary.skipped++;
