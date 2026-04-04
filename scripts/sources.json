@@ -1,0 +1,62 @@
+[
+  {
+    "name": "COSECSA Opportunities",
+    "url": "https://www.cosecsa.org/opportunities",
+    "trust": "auto"
+  },
+  {
+    "name": "PAACS Training Programs",
+    "url": "https://www.paacs.net/training-programs",
+    "trust": "auto"
+  },
+  {
+    "name": "Global Surgery Foundation",
+    "url": "https://www.globalsurgeryfoundation.org/programs",
+    "trust": "auto"
+  },
+  {
+    "name": "Hamlin Fistula Ethiopia Training",
+    "url": "https://hamlinfistula.org/what-we-do/training/",
+    "trust": "auto"
+  },
+  {
+    "name": "Lancet Global Health - Calls",
+    "url": "https://www.thelancet.com/journals/langlo/calls-for-papers",
+    "trust": "review"
+  },
+  {
+    "name": "WHO Fellowships",
+    "url": "https://www.who.int/about/funding/fellowships",
+    "trust": "auto"
+  },
+  {
+    "name": "NCD Alliance Opportunities",
+    "url": "https://ncdalliance.org/opportunities",
+    "trust": "auto"
+  },
+  {
+    "name": "ISGNS Opportunities",
+    "url": "https://www.isgns.org/opportunities",
+    "trust": "review"
+  },
+  {
+    "name": "International Surgical Society",
+    "url": "https://www.theiss.org",
+    "trust": "review"
+  },
+  {
+    "name": "Surgeons of East Africa",
+    "url": "https://eso-africa.org/opportunities",
+    "trust": "auto"
+  },
+  {
+    "name": "Bill & Melinda Gates Foundation - Global Health Grants",
+    "url": "https://www.gatesfoundation.org/about/apply-for-a-grant",
+    "trust": "review"
+  },
+  {
+    "name": "Wellcome Trust Open Calls",
+    "url": "https://wellcome.org/grant-funding/schemes",
+    "trust": "review"
+  }
+]

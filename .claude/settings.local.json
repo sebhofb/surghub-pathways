@@ -16,7 +16,9 @@
       "WebFetch(domain:www.globalsurgeryfoundation.org)",
       "Bash(git --version)",
       "Bash(gh --version)",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Skill(claude-api)",
+      "Skill(claude-api:*)"
     ]
   }
 }

@@ -32,7 +32,16 @@ export default function OpportunityCard({ item, onPress }) {
   const isPast = days < 0;
 
   return (
-    <TouchableOpacity style={styles.card} onPress={() => onPress(item)} activeOpacity={0.85}>
+    <TouchableOpacity
+      style={[styles.card, item.isSponsored && styles.sponsoredCard]}
+      onPress={() => onPress(item)}
+      activeOpacity={0.85}
+    >
+      {item.isSponsored && (
+        <View style={styles.sponsoredBanner}>
+          <Text style={styles.sponsoredBannerText}>⭐ SPONSORED</Text>
+        </View>
+      )}
       <View style={styles.header}>
         <View style={[styles.categoryBadge, { backgroundColor: categoryColor }]}>
           <Text style={styles.categoryText}>{item.category.toUpperCase()}</Text>
@@ -85,6 +94,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 3,
+    overflow: 'hidden',
+  },
+  sponsoredCard: {
+    borderWidth: 1.5,
+    borderColor: '#c9a84c',
+    backgroundColor: '#fffdf5',
+    shadowColor: '#c9a84c',
+    shadowOpacity: 0.15,
+    elevation: 5,
+  },
+  sponsoredBanner: {
+    backgroundColor: '#c9a84c',
+    marginHorizontal: -16,
+    marginTop: -16,
+    marginBottom: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 16,
+  },
+  sponsoredBannerText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
   header: {
     flexDirection: 'row',

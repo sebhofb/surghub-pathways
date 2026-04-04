@@ -1,0 +1,33 @@
+name: Daily Opportunity Scrape
+
+on:
+  schedule:
+    # Runs every day at 7:00 AM UTC (9:00 AM Geneva / 10:00 AM EAT)
+    - cron: '0 7 * * *'
+  # Also allows manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run opportunity scraper
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          EXPO_PUBLIC_AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          EXPO_PUBLIC_AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          EXPO_PUBLIC_AIRTABLE_TABLE: Opportunities
+        run: node scripts/scrape-opportunities.mjs

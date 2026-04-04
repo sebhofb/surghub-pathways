@@ -1,12 +1,11 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   View, Text, FlatList, TextInput,
-  TouchableOpacity, StyleSheet, SafeAreaView, RefreshControl,
+  TouchableOpacity, StyleSheet, SafeAreaView, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { OPPORTUNITIES, CATEGORIES } from '../data/opportunities';
+import { loadOpportunities } from '../services/airtable';
 import OpportunityCard from '../components/OpportunityCard';
-
-const LAST_SYNCED = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
 function daysUntil(dateStr) {
   const deadline = new Date(dateStr);
@@ -15,25 +14,54 @@ function daysUntil(dateStr) {
   return Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
 }
 
+function sortItems(items) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return [...items].sort((a, b) => {
+    // Sponsored always first
+    if (a.isSponsored && !b.isSponsored) return -1;
+    if (!a.isSponsored && b.isSponsored) return 1;
+    // Then open before closed, sorted by deadline
+    const da = new Date(a.deadline);
+    const db = new Date(b.deadline);
+    const aOpen = da >= today;
+    const bOpen = db >= today;
+    if (aOpen && !bOpen) return -1;
+    if (!aOpen && bOpen) return 1;
+    return da - db;
+  });
+}
+
 export default function DirectoryScreen({ navigation }) {
+  const [opportunities, setOpportunities] = useState(sortItems(OPPORTUNITIES));
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
   const [closingSoon, setClosingSoon] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [lastSynced, setLastSynced] = useState(LAST_SYNCED);
+  const [loading, setLoading] = useState(true);
+  const [syncStatus, setSyncStatus] = useState('');
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    // Simulate a network sync (replace with real fetch later)
-    setTimeout(() => {
+  async function loadData(isRefresh = false) {
+    if (isRefresh) setRefreshing(true);
+    try {
+      const { data, fromCache, stale } = await loadOpportunities({ force: isRefresh });
+      setOpportunities(sortItems(data));
       const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      setLastSynced(now);
+      setSyncStatus(stale ? 'Offline — cached data' : `Synced ${now}`);
+    } catch (e) {
+      setSyncStatus('Using local data');
+    } finally {
+      setLoading(false);
       setRefreshing(false);
-    }, 1200);
-  }, []);
+    }
+  }
+
+  useEffect(() => { loadData(); }, []);
+
+  const onRefresh = useCallback(() => loadData(true), []);
 
   const filtered = useMemo(() => {
-    let items = OPPORTUNITIES;
+    let items = opportunities;
 
     if (activeCategory) {
       items = items.filter((o) => o.category === activeCategory);
@@ -52,22 +80,21 @@ export default function DirectoryScreen({ navigation }) {
         (o) =>
           o.title.toLowerCase().includes(q) ||
           o.organization.toLowerCase().includes(q) ||
-          o.tags.some((t) => t.toLowerCase().includes(q))
+          (Array.isArray(o.tags) && o.tags.some((t) => t.toLowerCase().includes(q)))
       );
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return [...items].sort((a, b) => {
-      const da = new Date(a.deadline);
-      const db = new Date(b.deadline);
-      const aOpen = da >= today;
-      const bOpen = db >= today;
-      if (aOpen && !bOpen) return -1;
-      if (!aOpen && bOpen) return 1;
-      return da - db;
-    });
-  }, [searchQuery, activeCategory, closingSoon]);
+    return items;
+  }, [opportunities, searchQuery, activeCategory, closingSoon]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator style={{ marginTop: 60 }} size="large" color="#1a3a5c" />
+        <Text style={styles.loadingText}>Loading opportunities...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -82,7 +109,6 @@ export default function DirectoryScreen({ navigation }) {
         />
       </View>
 
-      {/* Category filter pills */}
       <View style={styles.filterRow}>
         <TouchableOpacity
           style={[styles.pill, !activeCategory && !closingSoon && styles.pillActive]}
@@ -113,7 +139,7 @@ export default function DirectoryScreen({ navigation }) {
 
       <View style={styles.metaRow}>
         <Text style={styles.resultCount}>{filtered.length} opportunities</Text>
-        <Text style={styles.syncedText}>Synced {lastSynced}</Text>
+        <Text style={styles.syncedText}>{syncStatus}</Text>
       </View>
 
       <FlatList
@@ -146,6 +172,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f4f6fa',
+  },
+  loadingText: {
+    textAlign: 'center',
+    color: '#aaa',
+    marginTop: 12,
+    fontSize: 14,
   },
   searchContainer: {
     paddingHorizontal: 16,
