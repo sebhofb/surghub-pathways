@@ -194,8 +194,12 @@ async function main() {
       summary.found++;
       opp.deadline = formatDate(opp.deadline);
       opp.isNew = true;
-      // Convert tags array to comma-separated string for Airtable plain text field
-      if (Array.isArray(opp.tags)) opp.tags = opp.tags.join(', ');
+      // Always convert tags to a plain string for Airtable
+      if (Array.isArray(opp.tags)) {
+        opp.tags = opp.tags.join(', ');
+      } else if (typeof opp.tags !== 'string') {
+        opp.tags = '';
+      }
 
       if (isDuplicate(opp, existing)) {
         console.log(`    ⏭️  Duplicate: ${opp.title}`);
