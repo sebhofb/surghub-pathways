@@ -60,6 +60,7 @@ export default function OpportunityCard({ opportunity }) {
     summary,
     isNew,
     isSponsored,
+    relevanceNote,
   } = opportunity;
 
   const catConfig = CATEGORY_CONFIG[category] || {
@@ -142,8 +143,15 @@ export default function OpportunityCard({ opportunity }) {
 
         {/* Summary */}
         {summary && (
-          <p className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4 flex-1">
+          <p className="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-2 flex-1">
             {summary}
+          </p>
+        )}
+
+        {/* Relevance note */}
+        {relevanceNote && (
+          <p className="text-[#1a6b4a] text-xs italic border-l-2 border-[#1a6b4a] pl-2 mb-3 line-clamp-2">
+            💡 {relevanceNote}
           </p>
         )}
 

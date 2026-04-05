@@ -396,11 +396,10 @@ async function main() {
       // "unsure" → add to Airtable as draft with a review note in the title
       const needsReview = opp.relevance === 'unsure';
       const reason = opp.relevanceReason || '';
+      if (reason) opp.relevanceNote = reason;
       if (needsReview) {
         console.log(`    🟡 Unsure — flagging for review: ${opp.title}`);
         opp.Notes = `⚠️ Relevance uncertain — please check before publishing\n${reason}`;
-      } else if (reason) {
-        opp.Notes = reason;
       }
       delete opp.relevanceReason;
 

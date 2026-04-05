@@ -129,6 +129,13 @@ export default function DetailScreen({ route }) {
         <Text style={styles.sectionHeading}>About this opportunity</Text>
         <Text style={styles.summary}>{item.summary}</Text>
 
+        {!!item.relevanceNote && (
+          <View style={styles.relevanceBox}>
+            <Text style={styles.relevanceIcon}>💡</Text>
+            <Text style={styles.relevanceText}>{item.relevanceNote}</Text>
+          </View>
+        )}
+
         <Text style={styles.sectionHeading}>Tags</Text>
         <View style={styles.tagRow}>
           {item.tags.map((tag) => (
@@ -253,7 +260,29 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#333',
     lineHeight: 23,
+    marginBottom: 12,
+  },
+  relevanceBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#f0f7f4',
+    borderLeftWidth: 3,
+    borderLeftColor: '#1a6b4a',
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 24,
+    gap: 8,
+  },
+  relevanceIcon: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  relevanceText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#1a6b4a',
+    fontStyle: 'italic',
+    lineHeight: 19,
   },
   tagRow: {
     flexDirection: 'row',

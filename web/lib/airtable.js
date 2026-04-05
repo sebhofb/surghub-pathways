@@ -77,6 +77,7 @@ function transformRecord(record) {
     isNew: Boolean(f.isNew || f["Is New"] || false),
     isSponsored: Boolean(f.isSponsored || f["Is Sponsored"] || false),
     status: f.status || f.Status || "published",
+    relevanceNote: f.relevanceNote || "",
   };
 }
 

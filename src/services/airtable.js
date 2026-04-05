@@ -27,6 +27,7 @@ function mapRecord(record) {
     isNew: f.isNew === true || f.isNew === 'true',
     isSponsored: f.isSponsored === true || f.isSponsored === 'true',
     status: (f.Status || f.status || 'published').toLowerCase(),
+    relevanceNote: f.relevanceNote || '',
   };
 }
 
