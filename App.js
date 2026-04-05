@@ -8,6 +8,7 @@ import { SavedProvider } from './src/context/SavedContext';
 import DirectoryScreen from './src/screens/DirectoryScreen';
 import DetailScreen from './src/screens/DetailScreen';
 import SavedScreen from './src/screens/SavedScreen';
+import AboutScreen from './src/screens/AboutScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -61,7 +62,8 @@ export default function App() {
             tabBarIcon: ({ focused, color, size }) => {
               const icons = {
                 Explore: focused ? 'search' : 'search-outline',
-                Saved: focused ? 'bookmark' : 'bookmark-outline',
+                Saved:   focused ? 'bookmark' : 'bookmark-outline',
+                About:   focused ? 'information-circle' : 'information-circle-outline',
               };
               return <Ionicons name={icons[route.name]} size={size} color={color} />;
             },
@@ -72,6 +74,17 @@ export default function App() {
         >
           <Tab.Screen name="Explore" component={DirectoryStack} />
           <Tab.Screen name="Saved" component={SavedStack} />
+          <Tab.Screen
+            name="About"
+            component={AboutScreen}
+            options={{
+              headerShown: true,
+              headerTitle: 'About',
+              headerStyle: { backgroundColor: '#1a3a5c' },
+              headerTintColor: '#fff',
+              headerTitleStyle: { fontWeight: '700' },
+            }}
+          />
         </Tab.Navigator>
       </NavigationContainer>
     </SavedProvider>
