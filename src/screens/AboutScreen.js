@@ -27,7 +27,7 @@ export default function AboutScreen() {
         </View>
 
         {/* App name + tagline */}
-        <Text style={styles.appName}>SURGhub Pathways</Text>
+        <Text style={styles.appName}>SURGpath</Text>
         <Text style={styles.tagline}>
           Fellowships, grants & conferences for surgical care in low- and middle-income countries
         </Text>
@@ -38,7 +38,7 @@ export default function AboutScreen() {
         {/* About blurb */}
         <Text style={styles.sectionTitle}>About</Text>
         <Text style={styles.body}>
-          SURGhub Pathways is a curated directory of opportunities for healthcare professionals
+          SURGpath is a curated directory of opportunities for healthcare professionals
           working in global surgical care. Updated daily, it brings together fellowships,
           scholarships, grants, conferences, and research calls from leading organisations
           around the world — so you never miss an opportunity to grow.

@@ -39,7 +39,7 @@ function DirectoryStack() {
         name="Directory"
         component={DirectoryScreen}
         options={{
-          title: 'SURGhub Pathways',
+          title: 'SURGpath',
           headerRight: () => <HeaderLogo />,
         }}
       />
