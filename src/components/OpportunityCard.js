@@ -3,12 +3,20 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSaved } from '../context/SavedContext';
 
+// ── GSF Brand Palette ─────────────────────────────────────────────
+const BLUE   = '#0468B1';   // primary blue
+const NAVY   = '#002F4C';   // dark navy
+const GREEN  = '#7ECC25';   // tertiary green
+const ORANGE = '#FF9734';   // secondary orange
+const YELLOW = '#FFC145';   // secondary yellow
+const RED    = '#CF2525';   // tertiary red
+
 const CATEGORY_COLORS = {
-  fellowship: '#1a6b4a',
-  scholarship: '#1a3a5c',
-  grant: '#7b3a8c',
-  conference: '#c05c00',
-  research: '#8c3a1a',
+  fellowship:  BLUE,
+  scholarship: NAVY,
+  grant:       GREEN,
+  conference:  ORANGE,
+  research:    RED,
 };
 
 function daysUntil(dateStr) {
@@ -28,7 +36,7 @@ export default function OpportunityCard({ item, onPress }) {
   const isSaved = savedIds.has(item.id);
   const hasDeadline = !!item.deadline;
   const days = hasDeadline ? daysUntil(item.deadline) : null;
-  const categoryColor = CATEGORY_COLORS[item.category] || '#444';
+  const categoryColor = CATEGORY_COLORS[item.category] || NAVY;
   const isUrgent = hasDeadline && days >= 0 && days <= 14;
   const isPast = hasDeadline && days < 0;
 
@@ -60,7 +68,7 @@ export default function OpportunityCard({ item, onPress }) {
           <Ionicons
             name={isSaved ? 'bookmark' : 'bookmark-outline'}
             size={20}
-            color={isSaved ? '#1a3a5c' : '#bbb'}
+            color={isSaved ? BLUE : '#bbb'}
           />
         </TouchableOpacity>
       </View>
@@ -104,14 +112,14 @@ const styles = StyleSheet.create({
   },
   sponsoredCard: {
     borderWidth: 1.5,
-    borderColor: '#c9a84c',
+    borderColor: YELLOW,
     backgroundColor: '#fffdf5',
-    shadowColor: '#c9a84c',
-    shadowOpacity: 0.15,
+    shadowColor: YELLOW,
+    shadowOpacity: 0.20,
     elevation: 5,
   },
   sponsoredBanner: {
-    backgroundColor: '#c9a84c',
+    backgroundColor: YELLOW,
     marginHorizontal: -16,
     marginTop: -16,
     marginBottom: 12,
@@ -119,7 +127,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   sponsoredBannerText: {
-    color: '#fff',
+    color: NAVY,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
@@ -142,15 +150,15 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   newBadge: {
-    backgroundColor: '#e8f5e9',
+    backgroundColor: '#eef8d6',
     borderRadius: 4,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: '#4caf50',
+    borderColor: GREEN,
   },
   newText: {
-    color: '#2e7d32',
+    color: '#3a6600',
     fontSize: 10,
     fontWeight: '700',
   },
@@ -160,7 +168,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1a1a2e',
+    color: NAVY,
     marginBottom: 4,
     lineHeight: 21,
   },
@@ -185,14 +193,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   urgentDeadline: {
-    color: '#c05c00',
+    color: ORANGE,
     fontWeight: '700',
   },
   pastDeadline: {
     color: '#aaa',
   },
   ongoingDeadline: {
-    color: '#1a6b4a',
+    color: '#3a6600',
     fontStyle: 'italic',
   },
 });

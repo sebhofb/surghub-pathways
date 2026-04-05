@@ -6,6 +6,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSaved } from '../context/SavedContext';
 
+// ── GSF Brand Palette ─────────────────────────────────────────────
+const BLUE   = '#0468B1';
+const NAVY   = '#002F4C';
+const GREEN  = '#7ECC25';
+const ORANGE = '#FF9734';
+
 function formatDeadline(dateStr) {
   const date = new Date(dateStr);
   return date.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -20,16 +26,13 @@ function daysUntil(dateStr) {
 
 function addToCalendar(item) {
   const deadline = new Date(item.deadline);
-  // Format dates for Google Calendar URL (YYYYMMDDTHHmmssZ)
   const pad = (n) => String(n).padStart(2, '0');
   const fmt = (d) =>
     `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
-
   const start = new Date(deadline);
   start.setHours(9, 0, 0, 0);
   const end = new Date(deadline);
   end.setHours(10, 0, 0, 0);
-
   const details = encodeURIComponent(`${item.organization}\n\n${item.summary}`);
   const title = encodeURIComponent(`DEADLINE: ${item.title}`);
   const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&details=${details}`;
@@ -84,7 +87,7 @@ export default function DetailScreen({ route }) {
             <Ionicons
               name={isSaved ? 'bookmark' : 'bookmark-outline'}
               size={20}
-              color={isSaved ? '#1a3a5c' : '#555'}
+              color={isSaved ? BLUE : '#555'}
             />
             <Text style={[styles.actionLabel, isSaved && styles.actionLabelActive]}>
               {isSaved ? 'Saved' : 'Save'}
@@ -138,7 +141,7 @@ export default function DetailScreen({ route }) {
 
         <Text style={styles.sectionHeading}>Tags</Text>
         <View style={styles.tagRow}>
-          {item.tags.map((tag) => (
+          {(item.tags || []).map((tag) => (
             <View key={tag} style={styles.tag}>
               <Text style={styles.tagText}>{tag}</Text>
             </View>
@@ -173,14 +176,14 @@ const styles = StyleSheet.create({
   category: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#1a3a5c',
+    color: BLUE,
     letterSpacing: 1,
     marginBottom: 8,
   },
   title: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#1a1a2e',
+    color: NAVY,
     marginBottom: 6,
     lineHeight: 27,
   },
@@ -217,17 +220,17 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   actionLabelActive: {
-    color: '#1a3a5c',
+    color: BLUE,
     fontWeight: '700',
   },
   deadlineBox: {
-    backgroundColor: '#eef2f8',
+    backgroundColor: '#deeaf5',   // light tint of #91B5D9
     borderRadius: 10,
     padding: 14,
     marginBottom: 24,
   },
   urgentBox: {
-    backgroundColor: '#fff3e0',
+    backgroundColor: '#fff1e0',
   },
   pastBox: {
     backgroundColor: '#f5f5f5',
@@ -235,7 +238,7 @@ const styles = StyleSheet.create({
   deadlineLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1a3a5c',
+    color: NAVY,
   },
   daysLeft: {
     fontSize: 13,
@@ -243,7 +246,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   urgentText: {
-    color: '#c05c00',
+    color: ORANGE,
   },
   pastText: {
     color: '#aaa',
@@ -251,7 +254,7 @@ const styles = StyleSheet.create({
   sectionHeading: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#1a3a5c',
+    color: NAVY,
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -265,9 +268,9 @@ const styles = StyleSheet.create({
   relevanceBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#f0f7f4',
+    backgroundColor: '#eef8d6',   // light tint of #7ECC25
     borderLeftWidth: 3,
-    borderLeftColor: '#1a6b4a',
+    borderLeftColor: GREEN,
     borderRadius: 8,
     padding: 12,
     marginBottom: 24,
@@ -280,7 +283,7 @@ const styles = StyleSheet.create({
   relevanceText: {
     flex: 1,
     fontSize: 13,
-    color: '#1a6b4a',
+    color: '#3a6600',
     fontStyle: 'italic',
     lineHeight: 19,
   },
@@ -291,18 +294,18 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   tag: {
-    backgroundColor: '#e8edf5',
+    backgroundColor: '#deeaf5',   // light tint of #91B5D9
     borderRadius: 6,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   tagText: {
     fontSize: 12,
-    color: '#1a3a5c',
+    color: NAVY,
     fontWeight: '500',
   },
   applyBtn: {
-    backgroundColor: '#1a3a5c',
+    backgroundColor: BLUE,
     borderRadius: 12,
     paddingVertical: 14,
     flexDirection: 'row',

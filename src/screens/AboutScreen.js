@@ -82,7 +82,7 @@ export default function AboutScreen() {
 }
 
 const BLUE  = '#1a3a5c';
-const GREEN = '#1a6b4a';
+const GREEN = '#0468B1';
 const LIGHT = '#f0f4f8';
 
 const styles = StyleSheet.create({

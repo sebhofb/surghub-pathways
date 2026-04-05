@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, SafeAreaView, RefreshControl, ActivityIndicator,
-  Animated,
+  Animated, Easing,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { OPPORTUNITIES, CATEGORIES } from '../data/opportunities';
@@ -43,19 +43,33 @@ export default function DirectoryScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState('');
 
-  // Animated value tracking scroll position for filter fade
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const filterOpacity = scrollY.interpolate({
-    inputRange: [0, 60],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
+  // Filter show/hide based on scroll direction — smoother than position interpolation
+  const filterAnim   = useRef(new Animated.Value(1)).current;  // 1 = visible, 0 = hidden
+  const lastScrollY  = useRef(0);
+  const filterShown  = useRef(true);
+
+  const filterOpacity   = filterAnim;
+  const filterMaxHeight = filterAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 200],
   });
-  // maxHeight lets the row use its natural height when open; collapses to 0 when scrolled
-  const filterMaxHeight = scrollY.interpolate({
-    inputRange: [0, 60],
-    outputRange: [200, 0],
-    extrapolate: 'clamp',
-  });
+
+  function onScroll(e) {
+    const y = e.nativeEvent.contentOffset.y;
+    const diff = y - lastScrollY.current;
+    lastScrollY.current = y;
+
+    const shouldShow = diff < 0 || y < 10;   // scrolling up OR near top → show
+    if (shouldShow === filterShown.current) return;
+    filterShown.current = shouldShow;
+
+    Animated.timing(filterAnim, {
+      toValue: shouldShow ? 1 : 0,
+      duration: 200,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+  }
 
   async function loadData(isRefresh = false) {
     if (isRefresh) setRefreshing(true);
@@ -180,8 +194,8 @@ export default function DirectoryScreen({ navigation }) {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={BLUE} colors={[BLUE]} />
         }
         onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
+          [{ nativeEvent: { contentOffset: { y: new Animated.Value(0) } } }],
+          { useNativeDriver: false, listener: onScroll }
         )}
         scrollEventThrottle={16}
       />
@@ -247,8 +261,8 @@ const styles = StyleSheet.create({
     borderColor: BLUE,
   },
   pillUrgent: {
-    backgroundColor: '#c05c00',
-    borderColor: '#c05c00',
+    backgroundColor: '#FF9734',
+    borderColor: '#FF9734',
   },
   pillText: {
     fontSize: 12,
