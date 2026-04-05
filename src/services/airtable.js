@@ -32,8 +32,8 @@ function mapRecord(record) {
 }
 
 export async function fetchOpportunities() {
-  // LOWER() makes the filter case-insensitive — handles "published" and "Published"
-  const filter = encodeURIComponent(`LOWER({Status})="published"`);
+  // OR covers lowercase and capitalised values from Airtable UI
+  const filter = encodeURIComponent(`OR({Status}="published",{Status}="Published")`);
   const baseUrl = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE)}?filterByFormula=${filter}&sort[0][field]=deadline&sort[0][direction]=asc`;
 
   // Paginate through all records (Airtable returns max 100 per page)
@@ -80,6 +80,7 @@ export async function loadOpportunities({ force = false } = {}) {
     const data = await fetchOpportunities();
     return { data, fromCache: false };
   } catch (e) {
+    console.error('[Airtable] fetch failed:', e.message);
     // No network — fall back to stale cache
     if (cached) {
       return { data: JSON.parse(cached), fromCache: true, stale: true };
