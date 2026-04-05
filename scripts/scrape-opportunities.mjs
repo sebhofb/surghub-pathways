@@ -257,10 +257,12 @@ Return a JSON object with these fields:
 - deadline: string — Follow these rules carefully:
   1. Look for any specific date on the page: application deadline, event date, registration close date.
      Return it as YYYY-MM-DD (e.g. "18 May 2026" → "2026-05-18").
-  2. Also look for a year the award/programme was issued (e.g. "2023 Travel Award", "Mentorship Programme 2022").
+  2. If the page says "applications are closed", "application window is now closed", "now closed", or similar — the deadline has already passed. If a date is given (e.g. "July 1"), use the most recent past occurrence of that date (e.g. if today is April 2026 and the page says "July 1", the last July 1 was 2025-07-01). Do NOT assign the next future occurrence.
+  3. Watch for relative deadline phrasing like "July 1 for the following year's [event]". The deadline year is then one year before the event year shown. E.g. if the page mentions a 2026 congress and says "July 1 for the following year's congress", the deadline was 2025-07-01.
+  4. Also look for a year the award/programme was issued (e.g. "2023 Travel Award", "Mentorship Programme 2022").
      If the opportunity clearly belongs to a past year, return the last day of that year (e.g. "2023-12-31").
-  3. If the programme is genuinely open-ended with rolling admissions and no deadline, return "ongoing".
-  4. Only return "" if you truly cannot determine anything about timing.
+  5. If the programme is genuinely open-ended with rolling admissions and no deadline, return "ongoing".
+  6. Only return "" if you truly cannot determine anything about timing.
 - summary: 2-4 sentences describing the opportunity, who it is for, and what it covers.
 - url: string — use exactly: "${pageUrl}"
 - isNew: true
