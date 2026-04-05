@@ -43,21 +43,36 @@ export default function DirectoryScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState('');
 
-  // Filter fade — opacity only, native thread, accumulator-based trigger
-  const filterOpacity = useRef(new Animated.Value(1)).current;
-  const filterShown   = useRef(true);
-  const lastY         = useRef(0);
-  const accumulator   = useRef(0);   // net scroll since last trigger
-  const THRESHOLD     = 32;          // px of net scroll needed to toggle
+  // Filter fade + collapse:
+  //   opacity animates on native thread (smooth)
+  //   height snaps instantly AFTER fade-out, or BEFORE fade-in (never visible)
+  const filterOpacity  = useRef(new Animated.Value(1)).current;
+  const [filterCollapsed, setFilterCollapsed] = useState(false);
+  const filterShown    = useRef(true);
+  const lastY          = useRef(0);
+  const accumulator    = useRef(0);
+  const THRESHOLD      = 32;
 
   function setFilterVisible(show) {
     if (show === filterShown.current) return;
     filterShown.current = show;
-    Animated.timing(filterOpacity, {
-      toValue: show ? 1 : 0,
-      duration: 180,
-      useNativeDriver: true,
-    }).start();
+
+    if (show) {
+      // Restore height first (invisible at opacity 0), then fade in
+      setFilterCollapsed(false);
+      requestAnimationFrame(() => {
+        Animated.timing(filterOpacity, {
+          toValue: 1, duration: 180, useNativeDriver: true,
+        }).start();
+      });
+    } else {
+      // Fade out, then snap height to zero once invisible
+      Animated.timing(filterOpacity, {
+        toValue: 0, duration: 180, useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (finished) setFilterCollapsed(true);
+      });
+    }
   }
 
   function onScroll(e) {
@@ -145,8 +160,8 @@ export default function DirectoryScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Filter pills — fade on scroll */}
-      <Animated.View style={[styles.filterRow, { opacity: filterOpacity }]}>
+      {/* Filter pills — fade then collapse on scroll down; restore then fade in on scroll up */}
+      <Animated.View style={[styles.filterRow, { opacity: filterOpacity }, filterCollapsed && styles.filterCollapsed]}>
         <TouchableOpacity
           style={[styles.pill, !activeCategory && !closingSoon && styles.pillActive]}
           onPress={() => { setActiveCategory(null); setClosingSoon(false); }}
@@ -245,6 +260,11 @@ const styles = StyleSheet.create({
   },
 
   /* Filters */
+  filterCollapsed: {
+    height: 0,
+    paddingBottom: 0,
+    overflow: 'hidden',
+  },
   filterRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
