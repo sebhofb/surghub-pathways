@@ -50,9 +50,10 @@ export default function DirectoryScreen({ navigation }) {
     outputRange: [1, 0],
     extrapolate: 'clamp',
   });
-  const filterHeight = scrollY.interpolate({
+  // maxHeight lets the row use its natural height when open; collapses to 0 when scrolled
+  const filterMaxHeight = scrollY.interpolate({
     inputRange: [0, 60],
-    outputRange: [46, 0],     // collapses height as well so it doesn't leave a gap
+    outputRange: [200, 0],
     extrapolate: 'clamp',
   });
 
@@ -124,7 +125,7 @@ export default function DirectoryScreen({ navigation }) {
       </View>
 
       {/* Filter pills — fade + collapse on scroll */}
-      <Animated.View style={[styles.filterRow, { opacity: filterOpacity, height: filterHeight, overflow: 'hidden' }]}>
+      <Animated.View style={[styles.filterRow, { opacity: filterOpacity, maxHeight: filterMaxHeight, overflow: 'hidden' }]}>
         <TouchableOpacity
           style={[styles.pill, !activeCategory && !closingSoon && styles.pillActive]}
           onPress={() => { setActiveCategory(null); setClosingSoon(false); }}
