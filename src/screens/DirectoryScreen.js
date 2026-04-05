@@ -154,7 +154,12 @@ export default function DirectoryScreen({ navigation }) {
         ListEmptyComponent={
           <Text style={styles.empty}>No matches found. Try a different search or filter.</Text>
         }
-        contentContainerStyle={{ paddingBottom: 32, paddingTop: 4 }}
+        ListFooterComponent={
+          filtered.length > 0
+            ? <Text style={styles.footer}>© {new Date().getFullYear()} The Global Surgery Foundation</Text>
+            : null
+        }
+        contentContainerStyle={{ paddingBottom: 16, paddingTop: 4 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -244,5 +249,11 @@ const styles = StyleSheet.create({
     color: '#aaa',
     marginTop: 60,
     fontSize: 14,
+  },
+  footer: {
+    textAlign: 'center',
+    color: '#bbb',
+    fontSize: 11,
+    paddingVertical: 20,
   },
 });
