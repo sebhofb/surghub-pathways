@@ -245,7 +245,10 @@ SURGhub Pathways is a directory for healthcare practitioners in low- and middle-
 NOT relevant: opportunities primarily focused on communicable/infectious diseases (HIV, TB, malaria, COVID etc.) unless directly linked to surgical care; environmental science; ocean or marine research; Antarctic programmes; economic policy unrelated to health; fitness/sports; non-health sectors.
 
 Return a JSON object with these fields:
-- relevant: boolean — true if this opportunity fits SURGhub Pathways' scope above. When in doubt, use true.
+- relevance: one of "yes" | "unsure" | "no"
+    "yes"   — clearly relevant to surgical care or health broadly
+    "no"    — clearly outside health (environmental, ocean, Antarctic, economic policy, sports, etc.)
+    "unsure" — health-related but unclear fit with surgical care (e.g. pure infectious disease, mental health, nutrition)
 - title: string — exact name of the opportunity
 - category: exactly one of "fellowship" | "scholarship" | "grant" | "conference" | "research"
 - organization: string — the sponsoring organisation
@@ -383,11 +386,17 @@ async function main() {
         return;
       }
 
-      // Relevance gate — skip if Claude flagged as out of scope
-      if (opp.relevant === false) {
+      // Relevance gate
+      if (opp.relevance === 'no') {
         console.log(`    🚫 Out of scope: ${opp.title}`);
         summary.skipped++;
         return;
+      }
+      // "unsure" → add to Airtable as draft with a review note in the title
+      const needsReview = opp.relevance === 'unsure';
+      if (needsReview) {
+        console.log(`    🟡 Unsure — flagging for review: ${opp.title}`);
+        opp.Notes = '⚠️ Relevance uncertain — please check before publishing';
       }
 
       opp.deadline = formatDate(opp.deadline);
@@ -416,7 +425,8 @@ async function main() {
       try {
         await addToAirtable(opp);
         existing.push({ title: opp.title.toLowerCase(), url: (opp.url || '').toLowerCase() });
-        console.log(`    ➕ Added: ${opp.title}`);
+        const tag = needsReview ? ' 🟡 NEEDS REVIEW' : '';
+        console.log(`    ➕ Added: ${opp.title}${tag}`);
         console.log(`       📅 Deadline: ${opp.deadline || '(none)'} | 🔗 ${opp.url}`);
         summary.added++;
       } catch (err) {
