@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import React, { useMemo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, FlatList,
   StyleSheet, SafeAreaView, RefreshControl, ActivityIndicator,
@@ -43,53 +43,39 @@ export default function DirectoryScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState('');
 
-  // Filter show/hide — opacity on native thread, height via state after animation
-  const filterAnim      = useRef(new Animated.Value(1)).current;
-  const [filterGone, setFilterGone] = useState(false); // true = height:0 applied
-  const filterShown     = useRef(true);
-  const lastScrollY     = useRef(0);
-  const directionRef    = useRef(null);   // 'up' | 'down'
-  const dirStartY       = useRef(0);      // Y where current direction streak began
-  const TRIGGER_PX      = 24;            // must scroll this far in one direction to toggle
+  // Filter fade — opacity only, native thread, accumulator-based trigger
+  const filterOpacity = useRef(new Animated.Value(1)).current;
+  const filterShown   = useRef(true);
+  const lastY         = useRef(0);
+  const accumulator   = useRef(0);   // net scroll since last trigger
+  const THRESHOLD     = 32;          // px of net scroll needed to toggle
 
-  function showFilters() {
-    if (filterShown.current) return;
-    filterShown.current = true;
-    setFilterGone(false); // restore height before fading in
-    Animated.timing(filterAnim, {
-      toValue: 1, duration: 180, useNativeDriver: true,
+  function setFilterVisible(show) {
+    if (show === filterShown.current) return;
+    filterShown.current = show;
+    Animated.timing(filterOpacity, {
+      toValue: show ? 1 : 0,
+      duration: 180,
+      useNativeDriver: true,
     }).start();
   }
 
-  function hideFilters() {
-    if (!filterShown.current) return;
-    filterShown.current = false;
-    Animated.timing(filterAnim, {
-      toValue: 0, duration: 180, useNativeDriver: true,
-    }).start(({ finished }) => {
-      if (finished) setFilterGone(true); // collapse height after fade-out completes
-    });
-  }
-
   function onScroll(e) {
-    const y   = e.nativeEvent.contentOffset.y;
-    const dir = y > lastScrollY.current ? 'down' : 'up';
-    lastScrollY.current = y;
+    const y    = e.nativeEvent.contentOffset.y;
+    const diff = y - lastY.current;
+    lastY.current = y;
 
-    if (y < 10) { showFilters(); directionRef.current = null; return; }
+    // Always show when near the top
+    if (y < 20) { accumulator.current = 0; setFilterVisible(true); return; }
 
-    // Reset streak when direction changes
-    if (dir !== directionRef.current) {
-      directionRef.current = dir;
-      dirStartY.current    = y;
-      return;
-    }
+    accumulator.current += diff;
 
-    // Only act after scrolling TRIGGER_PX in a consistent direction
-    if (Math.abs(y - dirStartY.current) < TRIGGER_PX) return;
+    // Not enough movement yet
+    if (Math.abs(accumulator.current) < THRESHOLD) return;
 
-    if (dir === 'down') hideFilters();
-    else                showFilters();
+    // Triggered — act then reset accumulator
+    setFilterVisible(accumulator.current < 0); // negative = net upward = show
+    accumulator.current = 0;
   }
 
   async function loadData(isRefresh = false) {
@@ -159,8 +145,8 @@ export default function DirectoryScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Filter pills — fade out then collapse height */}
-      <Animated.View style={[styles.filterRow, { opacity: filterAnim }, filterGone && styles.filterHidden]}>
+      {/* Filter pills — fade on scroll */}
+      <Animated.View style={[styles.filterRow, { opacity: filterOpacity }]}>
         <TouchableOpacity
           style={[styles.pill, !activeCategory && !closingSoon && styles.pillActive]}
           onPress={() => { setActiveCategory(null); setClosingSoon(false); }}
@@ -259,11 +245,6 @@ const styles = StyleSheet.create({
   },
 
   /* Filters */
-  filterHidden: {
-    height: 0,
-    overflow: 'hidden',
-    paddingBottom: 0,
-  },
   filterRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
