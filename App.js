@@ -15,7 +15,7 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const HEADER_STYLE = {
-  headerStyle: { backgroundColor: '#1a3a5c' },
+  headerStyle: { backgroundColor: '#0468B1' },
   headerTintColor: '#fff',
   headerTitleStyle: { fontWeight: '700' },
 };
@@ -25,7 +25,7 @@ function HeaderLogo() {
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
       <Image
         source={require('./assets/gsf-logo.png')}
-        style={{ width: 28, height: 28 }}
+        style={{ width: 28, height: 28, tintColor: '#fff' }}
         resizeMode="contain"
       />
     </View>
@@ -83,7 +83,7 @@ export default function App() {
               };
               return <Ionicons name={icons[route.name]} size={size} color={color} />;
             },
-            tabBarActiveTintColor: '#1a3a5c',
+            tabBarActiveTintColor: '#0468B1',
             tabBarInactiveTintColor: '#aaa',
             headerShown: false,
           })}
@@ -96,7 +96,7 @@ export default function App() {
             options={{
               headerShown: true,
               headerTitle: 'About',
-              headerStyle: { backgroundColor: '#1a3a5c' },
+              headerStyle: { backgroundColor: '#0468B1' },
               headerTintColor: '#fff',
               headerTitleStyle: { fontWeight: '700' },
             }}

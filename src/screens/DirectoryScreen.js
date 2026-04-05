@@ -1,11 +1,15 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
-  View, Text, FlatList, TextInput,
-  TouchableOpacity, StyleSheet, SafeAreaView, RefreshControl, ActivityIndicator,
+  View, Text, TextInput, TouchableOpacity,
+  StyleSheet, SafeAreaView, RefreshControl, ActivityIndicator,
+  Animated,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { OPPORTUNITIES, CATEGORIES } from '../data/opportunities';
 import { loadOpportunities } from '../services/airtable';
 import OpportunityCard from '../components/OpportunityCard';
+
+const BLUE = '#0468B1';
 
 function daysUntil(dateStr) {
   const deadline = new Date(dateStr);
@@ -18,10 +22,8 @@ function sortItems(items) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   return [...items].sort((a, b) => {
-    // Sponsored always first
     if (a.isSponsored && !b.isSponsored) return -1;
     if (!a.isSponsored && b.isSponsored) return 1;
-    // Then open before closed, sorted by deadline
     const da = new Date(a.deadline);
     const db = new Date(b.deadline);
     const aOpen = da >= today;
@@ -41,10 +43,23 @@ export default function DirectoryScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState('');
 
+  // Animated value tracking scroll position for filter fade
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const filterOpacity = scrollY.interpolate({
+    inputRange: [0, 60],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+  const filterHeight = scrollY.interpolate({
+    inputRange: [0, 60],
+    outputRange: [46, 0],     // collapses height as well so it doesn't leave a gap
+    extrapolate: 'clamp',
+  });
+
   async function loadData(isRefresh = false) {
     if (isRefresh) setRefreshing(true);
     try {
-      const { data, fromCache, stale } = await loadOpportunities({ force: isRefresh });
+      const { data, stale } = await loadOpportunities({ force: isRefresh });
       setOpportunities(sortItems(data));
       const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
       setSyncStatus(stale ? 'Offline — cached data' : `Synced ${now}`);
@@ -57,40 +72,27 @@ export default function DirectoryScreen({ navigation }) {
   }
 
   useEffect(() => { loadData(); }, []);
-
   const onRefresh = useCallback(() => loadData(true), []);
 
   const filtered = useMemo(() => {
     let items = opportunities;
-
-    if (activeCategory) {
-      items = items.filter((o) => o.category === activeCategory);
-    }
-
-    if (closingSoon) {
-      items = items.filter((o) => {
-        const d = daysUntil(o.deadline);
-        return d >= 0 && d <= 30;
-      });
-    }
-
+    if (activeCategory) items = items.filter((o) => o.category === activeCategory);
+    if (closingSoon) items = items.filter((o) => { const d = daysUntil(o.deadline); return d >= 0 && d <= 30; });
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      items = items.filter(
-        (o) =>
-          o.title.toLowerCase().includes(q) ||
-          o.organization.toLowerCase().includes(q) ||
-          (Array.isArray(o.tags) && o.tags.some((t) => t.toLowerCase().includes(q)))
+      items = items.filter((o) =>
+        o.title.toLowerCase().includes(q) ||
+        o.organization.toLowerCase().includes(q) ||
+        (Array.isArray(o.tags) && o.tags.some((t) => t.toLowerCase().includes(q)))
       );
     }
-
     return items;
   }, [opportunities, searchQuery, activeCategory, closingSoon]);
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <ActivityIndicator style={{ marginTop: 60 }} size="large" color="#1a3a5c" />
+        <ActivityIndicator style={{ marginTop: 60 }} size="large" color={BLUE} />
         <Text style={styles.loadingText}>Loading opportunities...</Text>
       </SafeAreaView>
     );
@@ -98,18 +100,31 @@ export default function DirectoryScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+
+      {/* Search bar with clear button */}
       <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search fellowships, grants, tags..."
-          placeholderTextColor="#aaa"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          clearButtonMode="while-editing"
-        />
+        <View style={styles.searchWrap}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search fellowships, grants, tags..."
+            placeholderTextColor="#aaa"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity
+              style={styles.clearBtn}
+              onPress={() => setSearchQuery('')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="close-circle" size={18} color="#bbb" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
-      <View style={styles.filterRow}>
+      {/* Filter pills — fade + collapse on scroll */}
+      <Animated.View style={[styles.filterRow, { opacity: filterOpacity, height: filterHeight, overflow: 'hidden' }]}>
         <TouchableOpacity
           style={[styles.pill, !activeCategory && !closingSoon && styles.pillActive]}
           onPress={() => { setActiveCategory(null); setClosingSoon(false); }}
@@ -135,14 +150,14 @@ export default function DirectoryScreen({ navigation }) {
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </Animated.View>
 
       <View style={styles.metaRow}>
         <Text style={styles.resultCount}>{filtered.length} opportunities</Text>
         <Text style={styles.syncedText}>{syncStatus}</Text>
       </View>
 
-      <FlatList
+      <Animated.FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
@@ -161,13 +176,13 @@ export default function DirectoryScreen({ navigation }) {
         }
         contentContainerStyle={{ paddingBottom: 16, paddingTop: 4 }}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#1a3a5c"
-            colors={['#1a3a5c']}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={BLUE} colors={[BLUE]} />
         }
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
       />
     </SafeAreaView>
   );
@@ -184,21 +199,33 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 14,
   },
+
+  /* Search */
   searchContainer: {
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 8,
   },
-  searchInput: {
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
     paddingHorizontal: 14,
+  },
+  searchInput: {
+    flex: 1,
     paddingVertical: 10,
     fontSize: 15,
     color: '#1a1a2e',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
   },
+  clearBtn: {
+    paddingLeft: 6,
+  },
+
+  /* Filters */
   filterRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -215,8 +242,8 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
   pillActive: {
-    backgroundColor: '#1a3a5c',
-    borderColor: '#1a3a5c',
+    backgroundColor: BLUE,
+    borderColor: BLUE,
   },
   pillUrgent: {
     backgroundColor: '#c05c00',
@@ -230,6 +257,8 @@ const styles = StyleSheet.create({
   pillTextActive: {
     color: '#fff',
   },
+
+  /* Meta row */
   metaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -244,6 +273,8 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#aaa',
   },
+
+  /* Misc */
   empty: {
     textAlign: 'center',
     color: '#aaa',
