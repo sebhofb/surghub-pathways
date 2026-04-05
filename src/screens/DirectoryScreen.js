@@ -1,8 +1,7 @@
-import React, { useMemo, useCallback, useEffect, useRef, useState } from 'react';
+import React, { useMemo, useCallback, useEffect, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, FlatList,
   StyleSheet, SafeAreaView, RefreshControl, ActivityIndicator,
-  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { OPPORTUNITIES, CATEGORIES } from '../data/opportunities';
@@ -42,56 +41,6 @@ export default function DirectoryScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState('');
-
-  // Filter fade + collapse:
-  //   opacity animates on native thread (smooth)
-  //   height snaps instantly AFTER fade-out, or BEFORE fade-in (never visible)
-  const filterOpacity  = useRef(new Animated.Value(1)).current;
-  const [filterCollapsed, setFilterCollapsed] = useState(false);
-  const filterShown    = useRef(true);
-  const lastY          = useRef(0);
-  const accumulator    = useRef(0);
-  const THRESHOLD      = 32;
-
-  function setFilterVisible(show) {
-    if (show === filterShown.current) return;
-    filterShown.current = show;
-
-    if (show) {
-      // Restore height first (invisible at opacity 0), then fade in
-      setFilterCollapsed(false);
-      requestAnimationFrame(() => {
-        Animated.timing(filterOpacity, {
-          toValue: 1, duration: 180, useNativeDriver: true,
-        }).start();
-      });
-    } else {
-      // Fade out, then snap height to zero once invisible
-      Animated.timing(filterOpacity, {
-        toValue: 0, duration: 180, useNativeDriver: true,
-      }).start(({ finished }) => {
-        if (finished) setFilterCollapsed(true);
-      });
-    }
-  }
-
-  function onScroll(e) {
-    const y    = e.nativeEvent.contentOffset.y;
-    const diff = y - lastY.current;
-    lastY.current = y;
-
-    // Always show when near the top
-    if (y < 20) { accumulator.current = 0; setFilterVisible(true); return; }
-
-    accumulator.current += diff;
-
-    // Not enough movement yet
-    if (Math.abs(accumulator.current) < THRESHOLD) return;
-
-    // Triggered — act then reset accumulator
-    setFilterVisible(accumulator.current < 0); // negative = net upward = show
-    accumulator.current = 0;
-  }
 
   async function loadData(isRefresh = false) {
     if (isRefresh) setRefreshing(true);
@@ -160,8 +109,8 @@ export default function DirectoryScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Filter pills — fade then collapse on scroll down; restore then fade in on scroll up */}
-      <Animated.View style={[styles.filterRow, { opacity: filterOpacity }, filterCollapsed && styles.filterCollapsed]}>
+      {/* Filter pills */}
+      <View style={styles.filterRow}>
         <TouchableOpacity
           style={[styles.pill, !activeCategory && !closingSoon && styles.pillActive]}
           onPress={() => { setActiveCategory(null); setClosingSoon(false); }}
@@ -187,7 +136,7 @@ export default function DirectoryScreen({ navigation }) {
             </Text>
           </TouchableOpacity>
         ))}
-      </Animated.View>
+      </View>
 
       <View style={styles.metaRow}>
         <Text style={styles.resultCount}>{filtered.length} opportunities</Text>
@@ -215,8 +164,6 @@ export default function DirectoryScreen({ navigation }) {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={BLUE} colors={[BLUE]} />
         }
-        onScroll={onScroll}
-        scrollEventThrottle={16}
       />
     </SafeAreaView>
   );
@@ -260,11 +207,6 @@ const styles = StyleSheet.create({
   },
 
   /* Filters */
-  filterCollapsed: {
-    height: 0,
-    paddingBottom: 0,
-    overflow: 'hidden',
-  },
   filterRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
