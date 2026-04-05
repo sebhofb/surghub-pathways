@@ -32,21 +32,28 @@ function mapRecord(record) {
 }
 
 export async function fetchOpportunities() {
-  // Only fetch published records — drafts await review, archived are hidden
-  const filter = encodeURIComponent(`{Status}="published"`);
-  const url = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE)}?filterByFormula=${filter}&sort[0][field]=deadline&sort[0][direction]=asc`;
+  // LOWER() makes the filter case-insensitive — handles "published" and "Published"
+  const filter = encodeURIComponent(`LOWER({Status})="published"`);
+  const baseUrl = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE)}?filterByFormula=${filter}&sort[0][field]=deadline&sort[0][direction]=asc`;
 
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${TOKEN}` },
-  });
+  // Paginate through all records (Airtable returns max 100 per page)
+  let allRecords = [];
+  let offset = null;
 
-  if (!response.ok) {
-    throw new Error(`Airtable error: ${response.status}`);
-  }
+  do {
+    const url = offset ? `${baseUrl}&offset=${offset}` : baseUrl;
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${TOKEN}` },
+    });
 
-  const json = await response.json();
-  // Double-filter client-side in case the Airtable formula lets anything through
-  const records = (json.records || [])
+    if (!response.ok) throw new Error(`Airtable error: ${response.status}`);
+
+    const json = await response.json();
+    allRecords = allRecords.concat(json.records || []);
+    offset = json.offset || null;
+  } while (offset);
+
+  const records = allRecords
     .map(mapRecord)
     .filter(r => r.status === 'published');
 
