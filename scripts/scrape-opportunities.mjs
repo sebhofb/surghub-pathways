@@ -359,10 +359,10 @@ async function main() {
     console.log(`    🔗 Phase 1: ${links.length} unique opportunity link${links.length === 1 ? '' : 's'}`);
     if (links.length === 0) { console.log(`    ℹ️  No opportunities on this page`); return; }
 
-    // ── Phase 2: Fetch detail pages in parallel (max 4 at once) ────────
+    // ── Phase 2: Fetch detail pages in parallel (max 2 at once) ────────
     summary.found += links.length;
 
-    await withConcurrency(links, 4, async (link) => {
+    await withConcurrency(links, 2, async (link) => {
       const isSpecificPage = link.url && link.url !== source.url;
       let detailText = listingText;
       let detailUrl  = link.url || source.url;
@@ -386,6 +386,8 @@ async function main() {
         summary.errors.push(`${link.title}: detail extraction failed`);
         return;
       }
+      // Brief pause after each Claude call to respect rate limits
+      await sleep(1500);
 
       // Relevance gate
       if (opp.relevance === 'no') {
@@ -401,6 +403,7 @@ async function main() {
         console.log(`    🟡 Unsure — flagging for review: ${opp.title}`);
         opp.Notes = `⚠️ Relevance uncertain — please check before publishing\n${reason}`;
       }
+      delete opp.relevance;
       delete opp.relevanceReason;
 
       opp.deadline = formatDate(opp.deadline);
@@ -440,8 +443,8 @@ async function main() {
     });
   }
 
-  // Process all sources in parallel batches of 4
-  await withConcurrency(SOURCES, 4, processSource);
+  // Process sources 2 at a time to stay within Claude rate limits
+  await withConcurrency(SOURCES, 2, processSource);
 
   // ── Auto-archive expired published records ────────────────────────────────
   console.log('\n🗄️  Archiving expired opportunities...');
