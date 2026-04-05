@@ -181,20 +181,31 @@ async function fetchDirect(url) {
 }
 
 // ── Phase 1: Extract opportunity titles + URLs from a listing page ────────────
-async function extractOpportunityLinks(pageText, sourceUrl) {
+async function extractOpportunityLinks(pageText, sourceUrl, scopeHint = '') {
+  const scopeLine = scopeHint && scopeHint !== 'any'
+    ? `This source specifically covers: ${scopeHint}. Prioritise opportunities in that area.`
+    : '';
+
   const response = await client.messages.create({
     model: 'claude-opus-4-6',
     max_tokens: 1024,
     messages: [{
       role: 'user',
-      content: `You scan webpages for global health and surgery career opportunities relevant to practitioners in low- and middle-income countries (LMICs).
+      content: `You scan webpages for opportunities relevant to healthcare practitioners in low- and middle-income countries (LMICs), with a focus on surgical care and related clinical fields.
 
-Look for: fellowships, scholarships, grants, conferences, research calls, abstract submissions, travel awards, membership programs.
+RELEVANT fields include (but are not limited to): surgery of any specialty, anaesthesia, obstetrics & gynaecology, maternal health, neonatal care, paediatric health, trauma & emergency care, oncology, burns, rehabilitation, perioperative care, global health systems, health workforce development, medical education, clinical research in any health field.
+
+EXCLUDE anything primarily focused on: communicable/infectious diseases (HIV, TB, malaria, COVID etc.) unless directly linked to surgical care; environmental science; ocean or marine research; Antarctic programmes; economic or social policy unrelated to health; fitness or sports science; non-health sectors.
+
+When in doubt, INCLUDE — it is better to flag a borderline opportunity for human review than to miss a relevant one.
+
+${scopeLine}
+
+Look for: fellowships, scholarships, grants, conferences, research calls, abstract submissions, travel awards.
 
 Rules:
-- Each item must be a distinct named opportunity (not a navigation link, section anchor, or page section)
+- Each item must be a distinct named opportunity (not a navigation link, section anchor, or general page section)
 - Do NOT return multiple items for the same underlying opportunity
-- Links appear as [text](URL) — use the most specific URL for each opportunity
 - Do NOT return anchor-only links like ${sourceUrl}#section
 
 Return a JSON array (deduplicated):
@@ -227,9 +238,14 @@ async function extractFullDetails(pageText, pageUrl) {
     max_tokens: 1024,
     messages: [{
       role: 'user',
-      content: `Extract details about a global health / surgery opportunity from this page.
+      content: `Extract details about an opportunity from this page and assess whether it is relevant to SURGhub Pathways.
+
+SURGhub Pathways is a directory for healthcare practitioners in low- and middle-income countries (LMICs), focused on surgical care broadly defined — including surgery of any specialty, anaesthesia, obstetrics & gynaecology, maternal health, neonatal care, paediatric health, trauma & emergency care, oncology, burns, rehabilitation, perioperative care, global health systems, health workforce development, medical education, and clinical research in any health field.
+
+NOT relevant: opportunities primarily focused on communicable/infectious diseases (HIV, TB, malaria, COVID etc.) unless directly linked to surgical care; environmental science; ocean or marine research; Antarctic programmes; economic policy unrelated to health; fitness/sports; non-health sectors.
 
 Return a JSON object with these fields:
+- relevant: boolean — true if this opportunity fits SURGhub Pathways' scope above. When in doubt, use true.
 - title: string — exact name of the opportunity
 - category: exactly one of "fellowship" | "scholarship" | "grant" | "conference" | "research"
 - organization: string — the sponsoring organisation
@@ -318,7 +334,7 @@ async function main() {
     // ── Phase 1: Extract opportunity links ──────────────────────────────
     let links;
     try {
-      links = await extractOpportunityLinks(listingText, source.url);
+      links = await extractOpportunityLinks(listingText, source.url, source.scope || '');
     } catch (err) {
       console.log(`    ❌ Phase 1 failed: ${err.message}`);
       summary.errors.push(`${source.name}: link extraction failed — ${err.message}`);
@@ -364,6 +380,13 @@ async function main() {
       } catch (err) {
         console.log(`    ❌ Detail extraction failed: ${err.message}`);
         summary.errors.push(`${link.title}: detail extraction failed`);
+        return;
+      }
+
+      // Relevance gate — skip if Claude flagged as out of scope
+      if (opp.relevant === false) {
+        console.log(`    🚫 Out of scope: ${opp.title}`);
+        summary.skipped++;
         return;
       }
 

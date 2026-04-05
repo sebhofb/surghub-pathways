@@ -3,144 +3,144 @@
     "name": "COSECSA – Scholarships & Fellowships",
     "url": "https://www.cosecsa.org/category/scholarships/",
     "trust": "auto",
-    "category": "Regional Surgical Colleges"
+    "scope": "any"
   },
   {
     "name": "WACS – News & Opportunities",
     "url": "https://www.wacscoac.org/index.php/component/content/category/27-news?Itemid=101",
     "trust": "auto",
-    "category": "Regional Surgical Colleges"
+    "scope": "any"
   },
   {
     "name": "CANECSA – Fellowship & Membership",
     "url": "https://canecsa.org/membership-fellowship/",
     "trust": "auto",
-    "category": "Regional Surgical Colleges"
+    "scope": "any"
   },
   {
     "name": "PAACS – Programs & Fellowships",
     "url": "https://paacs.net/what-we-do",
     "trust": "auto",
-    "category": "Global Surgery Networks"
+    "scope": "any"
   },
   {
     "name": "InciSioN – Get Involved",
     "url": "https://www.incisionetwork.org/get-involved",
     "trust": "auto",
-    "category": "Global Surgery Networks"
+    "scope": "any"
   },
   {
     "name": "The G4 Alliance – News & Updates",
     "url": "https://theg4alliance.org/news-updates/",
     "trust": "auto",
-    "category": "Global Surgery Networks"
+    "scope": "surgery, anaesthesia, obstetrics, trauma, emergency care"
   },
   {
     "name": "Global Surgery Foundation",
     "url": "https://www.globalsurgeryfoundation.org",
     "trust": "auto",
-    "category": "Global Surgery Networks"
+    "scope": "any"
   },
   {
     "name": "GSF – WHA79 Side Event",
     "url": "https://www.globalsurgeryfoundation.org/wha2026",
     "trust": "auto",
-    "category": "Global Surgery Networks"
+    "scope": "any"
   },
   {
     "name": "GSF – WHA79 Side Events Calendar",
     "url": "https://www.globalsurgeryfoundation.org/wha-calendar-2026",
     "trust": "auto",
-    "category": "Global Surgery Networks"
+    "scope": "global health, surgery, maternal health, universal health coverage"
   },
   {
     "name": "Hamlin Fistula Ethiopia – Training",
     "url": "https://hamlinfistula.org/what-we-do/training/",
     "trust": "auto",
-    "category": "Global Surgery Networks"
+    "scope": "any"
   },
   {
     "name": "ISGNS – International Society of Global Neurosurgery",
     "url": "https://www.isgns.org",
     "trust": "auto",
-    "category": "Global Surgery Networks"
+    "scope": "any"
   },
   {
     "name": "RCSI Institute of Global Surgery – News & Events",
     "url": "https://www.rcsi.com/surgery/global-surgery/news-and-events",
     "trust": "auto",
-    "category": "Global Surgery Networks"
+    "scope": "any"
   },
   {
     "name": "ACS – International Scholarships & Fellowships",
     "url": "https://www.facs.org/for-medical-professionals/professional-growth-and-wellness/scholarships-fellowships-and-awards/international/",
     "trust": "auto",
-    "category": "Major Grants & Funding"
+    "scope": "any"
   },
   {
     "name": "NIH Fogarty – Funding Opportunities",
     "url": "https://www.fic.nih.gov/Funding/Pages/Fogarty-Funding-Opps.aspx",
     "trust": "auto",
-    "category": "Major Grants & Funding"
+    "scope": "global health research, clinical research, health systems, surgical care, maternal health, non-communicable diseases"
   },
   {
     "name": "Wellcome Trust – Funding Schemes",
     "url": "https://wellcome.org/research-funding/schemes",
     "trust": "auto",
-    "category": "Major Grants & Funding"
+    "scope": "surgery, maternal health, non-communicable diseases, health systems, clinical research — exclude pure infectious/communicable disease grants"
   },
   {
     "name": "RSTMH – Grants & Awards",
     "url": "https://rstmh.org/grants",
     "trust": "auto",
-    "category": "Major Grants & Funding"
+    "scope": "clinical research, health systems, surgical care, maternal health, tropical medicine"
   },
   {
     "name": "GFMER – 2026 Courses & Training",
     "url": "https://www.gfmer.ch/2026-courses/index.htm",
     "trust": "auto",
-    "category": "Major Grants & Funding"
+    "scope": "reproductive health, maternal health, obstetrics, surgery, anaesthesia, medical education"
   },
   {
     "name": "ISS – Congress Events",
     "url": "https://web.iss-sic.com/congress-events",
     "trust": "auto",
-    "category": "Conferences"
+    "scope": "any"
   },
   {
     "name": "International Surgical Week 2026",
     "url": "https://www.isw2026.org/",
     "trust": "auto",
-    "category": "Conferences"
+    "scope": "any"
   },
   {
     "name": "WHO – Careers & Fellowships",
     "url": "https://www.who.int/careers",
     "trust": "review",
-    "category": "Global Aggregators"
+    "scope": "surgery, maternal health, health systems, non-communicable diseases, health workforce"
   },
   {
     "name": "NCD Alliance – Jobs & Opportunities",
     "url": "https://ncdalliance.org/jobs",
     "trust": "review",
-    "category": "Global Aggregators"
+    "scope": "non-communicable diseases, cancer, cardiovascular, diabetes — focus on those requiring surgical intervention or relevant to surgical care"
   },
   {
     "name": "Opportunity Desk – Fellowships",
     "url": "https://opportunitydesk.org/category/fellowships/",
     "trust": "review",
-    "category": "Global Aggregators"
+    "scope": "health, medicine, surgery, global health, medical research, healthcare — exclude non-health fields"
   },
   {
     "name": "Opportunity Desk – Grants",
     "url": "https://opportunitydesk.org/category/grants/",
     "trust": "review",
-    "category": "Global Aggregators"
+    "scope": "health, medicine, surgery, global health, medical research, healthcare — exclude non-health fields"
   },
   {
     "name": "Johns Hopkins – Global Health Student Opportunities",
     "url": "https://globalhealth.jhu.edu/student-opportunities-and-training-in-global-health",
     "trust": "review",
-    "category": "Global Aggregators"
+    "scope": "global health, surgery, maternal health, health systems, clinical research"
   }
 ]
