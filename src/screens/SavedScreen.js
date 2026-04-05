@@ -1,12 +1,33 @@
-import React from 'react';
-import { View, Text, FlatList, StyleSheet, SafeAreaView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useSaved } from '../context/SavedContext';
-import { OPPORTUNITIES } from '../data/opportunities';
+import { loadOpportunities } from '../services/airtable';
 import OpportunityCard from '../components/OpportunityCard';
+
+const BLUE = '#0468B1';
 
 export default function SavedScreen({ navigation }) {
   const { savedIds } = useSaved();
-  const savedItems = OPPORTUNITIES.filter((o) => savedIds.has(o.id));
+  const [allOpportunities, setAllOpportunities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load from Airtable (uses cache — fast on repeat visits)
+  useEffect(() => {
+    loadOpportunities()
+      .then(({ data }) => setAllOpportunities(data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const savedItems = allOpportunities.filter((o) => savedIds.has(o.id));
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator style={{ marginTop: 60 }} size="large" color={BLUE} />
+      </SafeAreaView>
+    );
+  }
 
   if (savedItems.length === 0) {
     return (
@@ -57,7 +78,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1a1a2e',
+    color: '#002F4C',
     marginBottom: 8,
   },
   emptySubtitle: {

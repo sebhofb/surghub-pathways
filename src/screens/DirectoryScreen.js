@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
+  View, Text, TextInput, TouchableOpacity, FlatList,
   StyleSheet, SafeAreaView, RefreshControl, ActivityIndicator,
   Animated, Easing,
 } from 'react-native';
@@ -172,7 +172,7 @@ export default function DirectoryScreen({ navigation }) {
         <Text style={styles.syncedText}>{syncStatus}</Text>
       </View>
 
-      <Animated.FlatList
+      <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
@@ -193,10 +193,7 @@ export default function DirectoryScreen({ navigation }) {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={BLUE} colors={[BLUE]} />
         }
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: new Animated.Value(0) } } }],
-          { useNativeDriver: false, listener: onScroll }
-        )}
+        onScroll={onScroll}
         scrollEventThrottle={16}
       />
     </SafeAreaView>
