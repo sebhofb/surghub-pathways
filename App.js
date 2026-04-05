@@ -1,4 +1,5 @@
 import React from 'react';
+import { View, Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -19,13 +20,28 @@ const HEADER_STYLE = {
   headerTitleStyle: { fontWeight: '700' },
 };
 
+function HeaderLogo() {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <Image
+        source={require('./assets/gsf-logo.png')}
+        style={{ width: 28, height: 28 }}
+        resizeMode="contain"
+      />
+    </View>
+  );
+}
+
 function DirectoryStack() {
   return (
     <Stack.Navigator screenOptions={HEADER_STYLE}>
       <Stack.Screen
         name="Directory"
         component={DirectoryScreen}
-        options={{ title: 'SURGhub Pathways' }}
+        options={{
+          title: 'SURGhub Pathways',
+          headerRight: () => <HeaderLogo />,
+        }}
       />
       <Stack.Screen
         name="Detail"

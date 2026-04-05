@@ -20,7 +20,7 @@ export default function AboutScreen() {
         {/* Logo */}
         <View style={styles.logoWrap}>
           <Image
-            source={require('../../assets/icon.png')}
+            source={require('../../assets/gsf-logo.png')}
             style={styles.logo}
             resizeMode="contain"
           />
