@@ -249,6 +249,7 @@ Return a JSON object with these fields:
     "yes"   — clearly relevant to surgical care or health broadly
     "no"    — clearly outside health (environmental, ocean, Antarctic, economic policy, sports, etc.)
     "unsure" — health-related but unclear fit with surgical care (e.g. pure infectious disease, mental health, nutrition)
+- relevanceReason: string — one concise sentence explaining why this is (or isn't) relevant to surgical care and LMICs. E.g. "Surgical fellowship for trainees in East Africa" or "Focuses on HIV treatment with no surgical component."
 - title: string — exact name of the opportunity
 - category: exactly one of "fellowship" | "scholarship" | "grant" | "conference" | "research"
 - organization: string — the sponsoring organisation
@@ -394,10 +395,14 @@ async function main() {
       }
       // "unsure" → add to Airtable as draft with a review note in the title
       const needsReview = opp.relevance === 'unsure';
+      const reason = opp.relevanceReason || '';
       if (needsReview) {
         console.log(`    🟡 Unsure — flagging for review: ${opp.title}`);
-        opp.Notes = '⚠️ Relevance uncertain — please check before publishing';
+        opp.Notes = `⚠️ Relevance uncertain — please check before publishing\n${reason}`;
+      } else if (reason) {
+        opp.Notes = reason;
       }
+      delete opp.relevanceReason;
 
       opp.deadline = formatDate(opp.deadline);
       opp.isNew    = true;
