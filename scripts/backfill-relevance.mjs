@@ -46,10 +46,11 @@ async function fetchRecordsToBackfill() {
   let offset = null;
 
   do {
-    const params = new URLSearchParams({
-      filterByFormula: `{relevanceNote} = ""`,
-      'fields[]': ['title', 'summary', 'category', 'organization', 'relevanceNote'],
-    });
+    const params = new URLSearchParams();
+    params.set('filterByFormula', `{relevanceNote} = ""`);
+    ['title', 'summary', 'category', 'organization', 'relevanceNote'].forEach(f =>
+      params.append('fields[]', f)
+    );
     if (offset) params.set('offset', offset);
 
     const res = await fetch(`${ENDPOINT}?${params}`, { headers: HEADERS });
