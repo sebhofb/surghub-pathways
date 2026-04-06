@@ -49,7 +49,7 @@ export default function DetailScreen({ route }) {
 
   function handleShare() {
     Share.share({
-      message: `${item.title}\n${item.organization} · ${item.location}\nDeadline: ${formatDeadline(item.deadline)}\n\n${item.summary}${item.url ? '\n\nApply: ' + item.url : ''}`,
+      message: `${item.title}\n${item.organization} · ${item.location}\nDeadline: ${formatDeadline(item.deadline)}\n\n${item.summary}${item.url ? '\n\nApply: ' + item.url : ''}\n\n— Discovered on SURGpath, the directory for global surgery opportunities.\nDownload on iOS & Android: https://surghub.org/pathways`,
       title: item.title,
     });
   }

@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useEffect, useState } from 'react';
+import React, { useMemo, useCallback, useEffect, useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, FlatList,
   StyleSheet, SafeAreaView, RefreshControl, ActivityIndicator,
@@ -41,6 +41,8 @@ export default function DirectoryScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState('');
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const flatListRef = useRef(null);
 
   async function loadData(isRefresh = false) {
     if (isRefresh) setRefreshing(true);
@@ -144,6 +146,7 @@ export default function DirectoryScreen({ navigation }) {
       </View>
 
       <FlatList
+        ref={flatListRef}
         data={filtered}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
@@ -164,7 +167,19 @@ export default function DirectoryScreen({ navigation }) {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={BLUE} colors={[BLUE]} />
         }
+        onScroll={(e) => setShowScrollTop(e.nativeEvent.contentOffset.y > 300)}
+        scrollEventThrottle={100}
       />
+
+      {showScrollTop && (
+        <TouchableOpacity
+          style={styles.scrollTopBtn}
+          onPress={() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true })}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="chevron-up" size={20} color="#fff" />
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }
@@ -253,6 +268,26 @@ const styles = StyleSheet.create({
   syncedText: {
     fontSize: 11,
     color: '#aaa',
+  },
+
+  /* Scroll to top */
+  scrollTopBtn: {
+    position: 'absolute',
+    bottom: 24,
+    alignSelf: 'center',
+    left: '50%',
+    marginLeft: -20,
+    backgroundColor: BLUE,
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 6,
   },
 
   /* Misc */

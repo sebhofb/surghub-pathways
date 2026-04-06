@@ -70,6 +70,23 @@ export default function AboutScreen() {
         {/* Divider */}
         <View style={styles.divider} />
 
+        {/* Disclaimer */}
+        <Text style={styles.sectionTitle}>Disclaimer</Text>
+        <Text style={styles.disclaimer}>
+          SURGpath provides links to third-party opportunities for informational purposes only.
+          We do not own, control, or verify the content of external listings, and make no
+          representations regarding their accuracy, completeness, or availability. Deadlines,
+          eligibility criteria, and award details may change without notice — always refer to
+          the official source before applying.
+        </Text>
+        <Text style={styles.disclaimer}>
+          The Global Surgery Foundation accepts no responsibility or liability for any loss or
+          inconvenience arising from reliance on information provided through this app.
+        </Text>
+
+        {/* Divider */}
+        <View style={styles.divider} />
+
         {/* Footer */}
         <Text style={styles.copyright}>
           © {new Date().getFullYear()} The Global Surgery Foundation
@@ -81,9 +98,8 @@ export default function AboutScreen() {
   );
 }
 
-const BLUE  = '#1a3a5c';
+const BLUE  = '#002F4C';
 const GREEN = '#0468B1';
-const LIGHT = '#f0f4f8';
 
 const styles = StyleSheet.create({
   safe: {
@@ -155,6 +171,14 @@ const styles = StyleSheet.create({
     color: '#444',
     lineHeight: 22,
     marginBottom: 12,
+    alignSelf: 'stretch',
+  },
+
+  disclaimer: {
+    fontSize: 12,
+    color: '#888',
+    lineHeight: 19,
+    marginBottom: 10,
     alignSelf: 'stretch',
   },
 
